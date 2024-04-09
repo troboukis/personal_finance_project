@@ -125,6 +125,7 @@ class DatabaseConnection:
 class Income(DatabaseConnection):
     def __init__(self, db_path):
         super().__init__(db_path)
+        # Χαρακτηριστικά των εσόδων: όνομα / 
 
     def InsertCategory(self):
         """
@@ -191,4 +192,3 @@ class Income(DatabaseConnection):
 class Expenses(DatabaseConnection):
     def __init__(self, db_path):
         super().__init__(db_path)
-
