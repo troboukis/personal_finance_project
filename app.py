@@ -57,28 +57,31 @@ class DatabaseConnection:
         self.conn = None
 
     def __enter__(self):
-        self.conn = sqlite3.connect(self.db_path)
-        self.cursor = self.conn.cursor()
-        self.cursor.execute('PRAGMA foreign_keys = ON;')
-        print("Συνδεθήκατε στη βάση δεδομένων.")
-        return self
+        if self.conn is None:
+            self.conn = sqlite3.connect(self.db_path)
+            self.cursor = self.conn.cursor()
+            self.cursor.execute('PRAGMA foreign_keys = ON;')
+            print("Συνδεθήκατε στη βάση δεδομένων.")
+            return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.commit()
-        self.conn.close()
+        if self.conn:
+            self.conn.commit()
+            self.conn.close()
+            self.conn=None
 
     def create_table(self, sql_command):
         self.cursor.execute('PRAGMA foreign_keys = ON;')
         self.cursor.execute(sql_command)
         self.conn.commit()
 
-    def get_index(self, table_name, column_name, category_name):
+    def retrieveID(self, table_name, column_name, category_name):
         """
-        Retrieves the ID for a given category name from the specified table.
+        Ανακτά το id μίας εγγραφής.
         
-        :param table_name: The name of the table to search.
-        :param column_name: The name of the ID column to retrieve.
-        :param category_name: The category name to search for.
+        :param table_name: Το όνομα του πίνακα προς αναζήτηση.
+        :param column_name: Το όνομα της στήλης ID που θα ανακτηθεί.
+        :param category_name: Το όνομα της κατηγορίας για αναζήτηση.
         """
         # Validate or sanitize table_name and column_name if necessary
         allowed_tables = {"category_table": ["category_id"]}
@@ -89,15 +92,11 @@ class DatabaseConnection:
             if result:
                 return result[0]
             else:
-                print(f"No category found with the name '{category_name}'.")
+                print(f"Δεν βρέθηκε κατηγορία με το όνομα '{category_name}'.")
                 return None
         else:
-            raise ValueError("Invalid table name or column name specified.")
+            raise ValueError("Μη έγκυρο όνομα πίνακα ή όνομα στήλης.")
 
-class showDatabase(DatabaseConnection):
-    def __init__(self, db_path):
-        super().__init__(db_path)
-    
     def get_tables(self):
         '''
         Επιστρέφει τα ονόματα των πινάκων της βάσης δεδομένων.
@@ -122,27 +121,20 @@ class showDatabase(DatabaseConnection):
             # Use pandas DataFrame for prettifying and easy manipulation of data and column names
             df = pd.DataFrame(data, columns=columns)
             return df
-
-class enterRecords(DatabaseConnection):
+            
+class Income(DatabaseConnection):
     def __init__(self, db_path):
         super().__init__(db_path)
-    
-    def open_connection(self):
-        if self.conn is None:
-            self.conn = sqlite3.connect(self.db_path)
-            self.cursor = self.conn.cursor()
-            self.cursor.execute('PRAGMA foreign_keys = ON;')
-            print("Συνδεθήκατε στη βάση δεδομένων.")
 
-    def close_connection(self):
-        if self.conn:
-            self.conn.commit()
-            self.conn.close()
-            self.conn = None
-            print("Αποσυνδεθήκατε από τη βάση δεδομένων.")
-
-    def insert_category(self):
-        self.open_connection()  # Ensure the connection is open
+    def InsertCategory(self):
+        """
+        Εισάγει μια νέα κατηγορία στον πίνακα 'category_table'. 
+        Η μέθοδος ζητά από τον χρήστη να καθορίσει εάν η νέα κατηγορία είναι έσοδο (1) ή έξοδο (0), και στη συνέχεια το όνομα της κατηγορίας. 
+        Στη συνέχεια, προσπαθεί να εισάγει αυτές τις τιμές στη βάση δεδομένων. Εάν η εισαγωγή είναι επιτυχής, εκτυπώνει μήνυμα επιτυχίας. Σε περίπτωση 
+        που εμφανιστεί σφάλμα, εκτυπώνει το σχετικό μήνυμα.
+        """
+        
+        self.__enter__()  # Βεβαιωθείτε ότι η σύνδεση είναι ανοιχτή
         type_id = int(input("Πατήστε '0' εάν η νέα κατηγορία είναι έξοδο και '1' εάν είναι έσοδο. "))
         if type_id == 0:
             name = input("Εισάγετε την κατηγορία εσόδου.")
@@ -151,16 +143,25 @@ class enterRecords(DatabaseConnection):
         insert_query = '''INSERT INTO category_table (name, type) VALUES (?, ?)'''
         try:
             self.cursor.execute(insert_query, (name, type_id))
-            self.conn.commit()  # Commit changes to the database
+            self.conn.commit()  # Δέσμευση αλλαγών στη βάση δεδομένων
             print("Η κατηγορία εισήχθη επιτυχώς.")
             return name
         except sqlite3.IntegrityError as e:
             print("Εμφανίστηκε σφάλμα:", e)
         finally:
-            self.close_connection()  # Close the connection when done
+            self.__exit__()  # Κλείστε τη σύνδεση όταν τελειώσετε
 
-    def insert_record(self, categ_id, freq_id, type_id):
-        self.open_connection()  # Ensure the connection is open
+    def InsertRecord(self, categ_id, freq_id, type_id):
+        """
+        Εισάγει μια νέα εγγραφή στον πίνακα 'records'. Η μέθοδος αρχικά ζητά από τον χρήστη να εισάγει το έσοδο ή το έξοδο 
+        βάσει του τύπου της εγγραφής (0 για έξοδο, 1 για έσοδο). Στη συνέχεια, προσπαθεί να εισάγει την εγγραφή με τα δοθέντα 
+        στοιχεία στη βάση δεδομένων. Εάν η εισαγωγή είναι επιτυχής, εκτυπώνει μήνυμα επιτυχίας. Σε περίπτωση σφάλματος 
+        της βάσης δεδομένων, εκτυπώνει το αντίστοιχο μήνυμα.
+        :param categ_id: Το ID της κατηγορίας όπου ανήκει η εγγραφή. Αντιστοιχεί σε μια υπάρχουσα εγγραφή στον πίνακα 'category_table'.
+        :param freq_id: Το ID της συχνότητας με την οποία συμβαίνει η εγγραφή (π.χ., μηνιαία, ετήσια). Αντιστοιχεί σε μια υπάρχουσα εγγραφή στον πίνακα 'frequency_table'.
+        :param type_id: Ο τύπος της εγγραφής (0 για έξοδο, 1 για έσοδο), καθορίζοντας αν αυτή είναι έσοδο ή έξοδο.
+        """
+        self.__enter__()  # Βεβαιωθείτε ότι η σύνδεση είναι ανοιχτή
         if type_id == 0:
             name = input("Εισάγετε τo έσοδο.")
         else:
@@ -168,9 +169,26 @@ class enterRecords(DatabaseConnection):
         insert_query = '''INSERT INTO records (name, type, frequency, category) VALUES (?, ?, ?, ?)'''
         try:
             self.cursor.execute(insert_query, (name, type_id, freq_id, categ_id))
-            self.conn.commit()  # Commit changes to the database
+            self.conn.commit()  # Δέσμευση αλλαγών στη βάση δεδομένων
             print("Η εγγραφή εισήχθη επιτυχώς.")
         except sqlite3.IntegrityError as e:
             print("Εμφανίστηκε σφάλμα:", e)
         finally:
-            self.close_connection()  # Close the connection when done
+            self.__exit__()  # Κλείστε τη σύνδεση όταν τελειώσετε
+
+    def UpdateCategory(self):
+        pass
+
+    def UpdateRecord(self):
+        pass
+        
+    def DeleteCategory(self):
+        pass
+
+    def DeleteRecord(self):
+        pass
+
+class Expenses(DatabaseConnection):
+    def __init__(self, db_path):
+        super().__init__(db_path)
+
