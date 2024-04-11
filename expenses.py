@@ -11,25 +11,25 @@ class ExpensesFrame(tk.Frame):
     def init_ui(self):
         # Configure the style for the Treeview
         style = ttk.Style(self)
-        style.theme_use("default")
-        style.configure("Treeview", 
+        treeStyle = ttk.Style(self)
+        treeStyle.theme_use("default")
+        treeStyle.configure("Treeview", 
                 background="white", 
                 foreground="black", 
-                rowheight=25, 
+                rowheight=5, 
                 fieldbackground="white")
-        style.map("Treeview", 
+        treeStyle.map("Treeview", 
                 background=[('selected', '#0078D7')],  # Change selection color here
                 foreground=[('selected', 'white')])
-        
         # Styling for the Treeview heading
-        style.configure("Treeview.Heading", 
-                font=("Helvetica", 13, 'bold'), 
+        treeStyle.configure("Treeview.Heading", 
+                font=("Helvetica", 13, 'italic'), 
                 background="#D3D3D3", 
                 foreground="black")
-        style.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
+        treeStyle.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
         
         # Setting 'gridlines' to 'both' to display grid lines in the Treeview
-        style.configure("Treeview", gridlines="both", borderwidth=0)
+        treeStyle.configure("Treeview", gridlines="both", borderwidth=1)
 
         # Define StringVars
         self.expense_description = tk.StringVar()
