@@ -1,0 +1,1 @@
+ttk.Button(income_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame)).grid(row=10, column=0, sticky='ew')
