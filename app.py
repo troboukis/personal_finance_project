@@ -2,14 +2,12 @@ import numpy as np
 import json
 import sqlite3
 import pandas as pd
-
-def prettify_data(rows):
-    category_dict = {}
-    for row in rows:
-        # Using 'id' as the key, and storing 'name' and 'type' in a sub-dictionary
-        category_dict[row[0]] = {'name': row[1], 'type': row[2]}
-    return category_dict
-    
+import datetime
+            
+def current_date():
+    # Return the current date as a string
+    return datetime.datetime.now().strftime("%Y-%m-%d")
+        
 type_sql = '''
     CREATE TABLE IF NOT EXISTS type_table (
         type_id INTEGER NOT NULL UNIQUE, 
@@ -34,27 +32,40 @@ category_sql = '''
         FOREIGN KEY(type) REFERENCES type_table(type_id)
     )
     '''
-records_sql = '''
-    CREATE TABLE IF NOT EXISTS records (
-        records_id INTEGER NOT NULL UNIQUE,
+income_sql = '''
+    CREATE TABLE IF NOT EXISTS income (
+        income_id INTEGER NOT NULL UNIQUE,
+        date DATE,
         name TEXT,
-        type INTEGER NOT NULL,
         frequency INTEGER NOT NULL,
         category INTEGER NOT NULL,
-        PRIMARY KEY(records_id),
-        FOREIGN KEY(type) REFERENCES type_table(type_id)
-        FOREIGN KEY(frequency) REFERENCES frequency_table(freq_id)
+        PRIMARY KEY(income_id),
+        FOREIGN KEY(frequency) REFERENCES frequency_table(freq_id),
         FOREIGN KEY(category) REFERENCES category_table(category_id)
     )
     '''
 
-commands = [type_sql, freq_sql, category_sql, records_sql]
+expenses_sql = '''
+    CREATE TABLE IF NOT EXISTS expenses (
+        expenses_id INTEGER NOT NULL UNIQUE,
+        date DATE,
+        name TEXT,
+        frequency INTEGER NOT NULL,
+        category INTEGER NOT NULL,
+        PRIMARY KEY(expenses_id),
+        FOREIGN KEY(frequency) REFERENCES frequency_table(freq_id),
+        FOREIGN KEY(category) REFERENCES category_table(category_id)
+    )
+    '''
+
+commands = [type_sql, freq_sql, category_sql, income_sql, expenses_sql]
 new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
 
 class DatabaseConnection:
     def __init__(self, db_path):
         self.db_path = db_path
         self.conn = None
+        self.date = current_date()
 
     def __enter__(self):
         if self.conn is None:
@@ -111,48 +122,78 @@ class DatabaseConnection:
         '''
         Επιστρέφει τα δεδομένα της βάσης δεδομένων. Εάν columns=True, τότε επιστρέφει ένα πλαίσιο δεδομένων. Διαφορετικά επιστρέφει ένα λεξικό.
         '''
+        self.__enter__()
         parameter = f"SELECT * FROM {table}"
         self.cursor.execute(parameter)
         data = self.cursor.fetchall()
         if not dataframe:
-            return prettify_data(data)
+            return data
         else:
             columns = [description[0] for description in self.cursor.description]
             # Use pandas DataFrame for prettifying and easy manipulation of data and column names
             df = pd.DataFrame(data, columns=columns)
+            self.__exit__(None, None, None)
             return df
+
+
+
+    def initializeTable(self, sql_code, table_name, column1, column2, value1, value2):
+        ''' Αρχικοποιοεί τους πίνακες για συχνότητα και τύπο εγγραφής'''
+        try:
+            self.create_table(sql_code)  # Assuming this is correctly defined to execute the SQL command
+            # Proper SQL string format with table and column names inserted directly (vulnerable to SQL injection if variables are not controlled)
+            insert_query = f"INSERT INTO {table_name} ({column1}, {column2}) VALUES (?, ?)"
+            self.cursor.execute(insert_query, (value1, value2))
+            self.conn.commit()  # Commit changes to the database
+            print("Η κατηγορία εισήχθη επιτυχώς.")
             
+        except sqlite3.IntegrityError as e:
+            print("Εμφανίστηκε σφάλμα:", e)
+
+
 class Income(DatabaseConnection):
     def __init__(self, db_path):
         super().__init__(db_path)
-        # Χαρακτηριστικά των εσόδων: όνομα / 
+        self.income_id=None
+        self.name=None
+        self.category_name = None
+        self.frequency=None
+        self.category=None
 
-    def InsertCategory(self):
+    def InsertCategory(self, category_name):
         """
         Εισάγει μια νέα κατηγορία στον πίνακα 'category_table'. 
         Η μέθοδος ζητά από τον χρήστη να καθορίσει εάν η νέα κατηγορία είναι έσοδο (1) ή έξοδο (0), και στη συνέχεια το όνομα της κατηγορίας. 
         Στη συνέχεια, προσπαθεί να εισάγει αυτές τις τιμές στη βάση δεδομένων. Εάν η εισαγωγή είναι επιτυχής, εκτυπώνει μήνυμα επιτυχίας. Σε περίπτωση 
         που εμφανιστεί σφάλμα, εκτυπώνει το σχετικό μήνυμα.
         """
-        
-        self.__enter__()  # Βεβαιωθείτε ότι η σύνδεση είναι ανοιχτή
-        type_id = int(input("Πατήστε '0' εάν η νέα κατηγορία είναι έξοδο και '1' εάν είναι έσοδο. "))
-        if type_id == 0:
-            name = input("Εισάγετε την κατηγορία εσόδου.")
-        else:
-            name = input("Εισάγετε την κατηγορία εξόδου.")
-        insert_query = '''INSERT INTO category_table (name, type) VALUES (?, ?)'''
-        try:
-            self.cursor.execute(insert_query, (name, type_id))
-            self.conn.commit()  # Δέσμευση αλλαγών στη βάση δεδομένων
-            print("Η κατηγορία εισήχθη επιτυχώς.")
-            return name
-        except sqlite3.IntegrityError as e:
-            print("Εμφανίστηκε σφάλμα:", e)
-        finally:
-            self.__exit__()  # Κλείστε τη σύνδεση όταν τελειώσετε
+        # ΣΥΝΔΕΣΗ ΣΤΗ ΒΑΣΗ
+        self.__enter__()  # Ensure the connection is open
 
-    def InsertRecord(self, categ_id, freq_id, type_id):
+        # ΕΛΕΓΧΟΣ ΤΩΝ ΥΠΑΡΧΟΝΤΩΝ ΚΑΤΗΓΟΡΙΩΝ
+        existing_categories = [cat[1] for cat in self.showData('category_table', dataframe=False)]
+        if category_name in existing_categories:
+            print(f"Η κατηγορία εσόδων που προσπαθείτε να εισάγετε υπάρχει ήδη.")
+            self.__exit__(None, None, None)
+
+            return 0
+
+        # ΚΑΤΑΧΩΡΗΣΗ ΝΕΑΣ ΚΑΤΗΓΟΡΙΑΣ
+        else:
+            insert_query = "INSERT INTO category_table (name, type) VALUES (?, ?)"
+            try:
+                self.cursor.execute(insert_query, (category_name, 1))  # Correctly using placeholders
+                self.conn.commit()  # Commit changes to the database
+                print(f"Η κατηγορία {category_name} εισήχθη επιτυχώς.")
+                
+            except sqlite3.IntegrityError as e:
+                print("Εμφανίστηκε σφάλμα:", e)
+            finally:
+                self.__exit__(None, None, None)  # Close the connection when done
+
+
+
+    def InsertRecord(self, income_description, frequency_id, category_id):
         """
         Εισάγει μια νέα εγγραφή στον πίνακα 'records'. Η μέθοδος αρχικά ζητά από τον χρήστη να εισάγει το έσοδο ή το έξοδο 
         βάσει του τύπου της εγγραφής (0 για έξοδο, 1 για έσοδο). Στη συνέχεια, προσπαθεί να εισάγει την εγγραφή με τα δοθέντα 
@@ -163,19 +204,16 @@ class Income(DatabaseConnection):
         :param type_id: Ο τύπος της εγγραφής (0 για έξοδο, 1 για έσοδο), καθορίζοντας αν αυτή είναι έσοδο ή έξοδο.
         """
         self.__enter__()  # Βεβαιωθείτε ότι η σύνδεση είναι ανοιχτή
-        if type_id == 0:
-            name = input("Εισάγετε τo έσοδο.")
-        else:
-            name = input("Εισάγετε το έξοδο.")
-        insert_query = '''INSERT INTO records (name, type, frequency, category) VALUES (?, ?, ?, ?)'''
+        insert_query = '''INSERT INTO income (date, name, frequency, category) VALUES (?, ?, ?, ?)'''
         try:
-            self.cursor.execute(insert_query, (name, type_id, freq_id, categ_id))
+            self.cursor.execute(insert_query, (self.date, income_description, frequency_id, category_id))
             self.conn.commit()  # Δέσμευση αλλαγών στη βάση δεδομένων
-            print("Η εγγραφή εισήχθη επιτυχώς.")
+            print(f"Η εγγραφή {income_description} εισήχθη επιτυχώς.")
         except sqlite3.IntegrityError as e:
             print("Εμφανίστηκε σφάλμα:", e)
         finally:
-            self.__exit__()  # Κλείστε τη σύνδεση όταν τελειώσετε
+            self.__exit__(None, None, None)  # Κλείστε τη σύνδεση όταν τελειώσετε
+            print("Aποσυνδεθήκατε από τη βάση δεδομένων")
 
     def UpdateCategory(self):
         pass
@@ -192,3 +230,28 @@ class Income(DatabaseConnection):
 class Expenses(DatabaseConnection):
     def __init__(self, db_path):
         super().__init__(db_path)
+
+if __name__ == "__main__":
+    # Αρχικοποίηση πινάκων - Δημιουργία σταθερών πινα΄κων
+    with DatabaseConnection(new_db) as db:
+        
+        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 0, 'μηνιαίο')
+        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 1, 'ετήσιο')
+        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 2, 'μοναδιαίο')
+
+        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 0, 'έξοδο')
+        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 1, 'έσοδο')
+
+        db.create_table(category_sql)
+        db.create_table(income_sql)
+        db.create_table(expenses_sql)
+
+        tables = db.get_tables()
+    print(f"Δημιουργήσατε τους εξής πίνακες: {', '.join(tables)}")
+    print(f"Ο πίνακας {tables[0]} έχει τις στήλες")
+
+    # Καταχώρηση βασικών κατηγοριών
+    income_list = ["Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Δικαιώματα πνευματικής ιδιοκτησίας", "Κέρδη από μετοχές", "Αποζημιώσεις", "Συντάξεις", "Παροχές από ασφαλιστικά ταμεία", "Επιδοτήσεις", "Εισοδήματα από freelance εργασίες", "Άλλα έκτακτα έσοδα"]
+    dbin = Income(new_db)
+    for income in income_list:
+        dbin.InsertCategory(income)
