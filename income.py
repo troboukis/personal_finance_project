@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
 from app import *
+from tkinter import messagebox
 
 class IncomeFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -10,6 +11,10 @@ class IncomeFrame(tk.Frame):
         self.init_ui()
 
     def init_ui(self):
+        self.indb = Income(new_db)
+        self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
+        self.category_options = [i[1] for i in self.indb.showData('category_table')]
+
         # Configure the style for the Treeview
         style = ttk.Style(self)
         treeStyle = ttk.Style(self)
@@ -39,6 +44,7 @@ class IncomeFrame(tk.Frame):
         self.income_date = tk.StringVar()
         self.frequency = tk.StringVar()
 
+
         tk.Label(self, text="Καταχώρηση εσόδων:", font=("Helvetica", 30)).grid(row=1, column=0, padx=10, pady=10, columnspan=2)
         # Περιγραφή εσόδου
         tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=10, sticky="w")
@@ -50,15 +56,18 @@ class IncomeFrame(tk.Frame):
 
         # Κατηγορία
         tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=10, sticky="w")
-        ttk.Combobox(self, textvariable=self.income_category, font=("Courier", 20), values=["Food", "Transport", "Housing"]).grid(row=4, column=1, padx=10, pady=10, sticky="ew")
+        ttk.Combobox(self, textvariable=self.income_category, font=("Courier", 20), values=self.category_options).grid(row=4, column=1, padx=10, pady=10, sticky="ew")
 
         # Ημερομηνία
         tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=10, sticky="w")
-        tk.Entry(self, textvariable=self.income_date, font=("Courier", 20)).grid(row=5, column=1, padx=10, pady=10, sticky="ew")
+        self.category_combobox = tk.Entry(self, textvariable=self.income_date, font=("Courier", 20)).grid(row=5, column=1, padx=10, pady=10, sticky="ew")
+        
 
         # Συχνότητα
         tk.Label(self, text="Συχνότητα", font=("Helvetica", 20)).grid(row=6, column=0, padx=10, pady=10, sticky="w")
-        tk.Entry(self, textvariable=self.frequency, font=("Courier", 20)).grid(row=6, column=1, padx=10, pady=10, sticky="ew")
+        self.frequency_combobox = ttk.Combobox(self, textvariable=self.frequency, font=("Courier", 20), values=self.frequency_options)
+        self.frequency_combobox.grid(row=6, column=1, padx=10, pady=10, sticky="ew")
+        self.frequency_combobox.set('Έκτακτο')  # Optionally set a default value
 
         # Submit Button
         ttk.Button(self, text="Πρόσθεσε έσοδο", style='info.TButton', command=self.add_income).grid(row=7, column=0, columnspan=2, pady=20)
@@ -68,46 +77,37 @@ class IncomeFrame(tk.Frame):
 
         # income Table
         self.tree = ttk.Treeview(self, columns=('Description', 'Amount', 'Category', 'Date', 'Frequency'), show='headings')
-        self.tree.heading('Description', text='Description')
-        self.tree.heading('Amount', text='Amount')
-        self.tree.heading('Category', text='Category')
-        self.tree.heading('Date', text='Date')
-        self.tree.heading('Frequency', text='Frequency')
-        self.tree.grid(row=2, column=3, rowspan=6, padx=10, pady=10, sticky='nsew')
+        self.tree.heading('Description', text='Περιγραφή')
+        self.tree.heading('Amount', text='Ποσό σε ευρώ')
+        self.tree.heading('Category', text='Κατηγορία')
+        self.tree.heading('Date', text='Ημερομηνία')
+        self.tree.heading('Frequency', text='Συχνότητα')
+        self.tree.grid(row=3, column=3, rowspan=6, padx=10, pady=10, sticky='nsew')
         self.grid_columnconfigure(3, weight=1)  # Allows the table to expand
-        self.grid_rowconfigure(2, weight=1)     # Distributes extra vertical space to the treeview
+        self.grid_rowconfigure(2, weight=0)     # Distributes extra vertical space to the treeview
 
-    def get_income_details(self):
+    def correct_amount(self):
         try:
-            self.income_amount = float(self.income_amount.get())  # Try converting amount to float
+            amount = float(self.income_amount.get())  # Try converting amount to float
+            return amount
         except ValueError:
-            print("Invalid amount entered. Please enter a numeric value.")
+            messagebox.showerror("Σφάλμα", "Έχετε εισάγει μη έγκυρο ποσό.")
             return None  # Or handle it some other way
 
-        return {
-            'description': self.income_description.get(),
-            'amount': self.income_amount,
-            'category': self.income_category.get(), 
-            'date': self.income_date.get(),
-            'frequency': self.frequency.get() 
-        }
-
     def add_income(self):
-        indb = Income(new_db)
-        categories = indb.showData('category_table', dataframe=False)
         income_data = {
             'Description': self.income_description.get(),
-            'Amount': self.income_amount.get(),
+            'Amount': self.correct_amount(),
             'Category': self.income_category.get(),
             'Date': self.income_date.get(),
             'Frequency': self.frequency.get()
         }
         self.incomes.append(income_data)  # Add to the list of entries
         self.update_table()  # Update the table view
-        indb.InsertIncome(
+        self.indb.InsertIncome(
             income_data['Description'], 
             income_data['Amount'], 
-            return_category_index(income_data['Category'], categories), 
+            return_category_index(income_data['Category'], self.category_options), 
             income_data['Date'], 
             0)
 

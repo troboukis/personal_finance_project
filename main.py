@@ -87,12 +87,12 @@ def main():
 if __name__ == "__main__":
     with DatabaseConnection(new_db) as db:
         
-        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 0, 'μηνιαίο')
-        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 1, 'ετήσιο')
-        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 2, 'μοναδιαίο')
+        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 0, 'Μηνιαίο')
+        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 1, 'Ετήσιο')
+        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 2, 'Έκτακτο')
 
-        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 0, 'έξοδο')
-        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 1, 'έσοδο')
+        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 0, 'Έξοδο')
+        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 1, 'Έσοδο')
 
         db.create_table(category_sql)
         db.create_table(income_sql)

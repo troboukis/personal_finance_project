@@ -1,1 +1,1 @@
-return_category_index
+self.
