@@ -3,10 +3,19 @@ import json
 import sqlite3
 import pandas as pd
 import datetime
+# from expenses import ExpensesFrame
+# from income import IncomeFrame
             
 def current_date():
     # Return the current date as a string
     return datetime.datetime.now().strftime("%Y-%m-%d")
+
+def return_category_index(string, data):
+    for item in data:
+        if string == item[1]:
+            return item[0]
+        else:
+            return 12
         
 type_sql = '''
     CREATE TABLE IF NOT EXISTS type_table (
@@ -37,6 +46,7 @@ income_sql = '''
         income_id INTEGER NOT NULL UNIQUE,
         date DATE,
         name TEXT,
+        amount INTEGER NOT NULL,
         frequency INTEGER NOT NULL,
         category INTEGER NOT NULL,
         PRIMARY KEY(income_id),
@@ -50,6 +60,7 @@ expenses_sql = '''
         expenses_id INTEGER NOT NULL UNIQUE,
         date DATE,
         name TEXT,
+        amount INTEGER NOT NULL,
         frequency INTEGER NOT NULL,
         category INTEGER NOT NULL,
         PRIMARY KEY(expenses_id),
@@ -193,7 +204,7 @@ class Income(DatabaseConnection):
 
 
 
-    def InsertRecord(self, income_description, frequency_id, category_id):
+    def InsertIncome(self, income_description, amount, category_id, date, frequency_id):
         """
         Εισάγει μια νέα εγγραφή στον πίνακα 'records'. Η μέθοδος αρχικά ζητά από τον χρήστη να εισάγει το έσοδο ή το έξοδο 
         βάσει του τύπου της εγγραφής (0 για έξοδο, 1 για έσοδο). Στη συνέχεια, προσπαθεί να εισάγει την εγγραφή με τα δοθέντα 
@@ -204,9 +215,9 @@ class Income(DatabaseConnection):
         :param type_id: Ο τύπος της εγγραφής (0 για έξοδο, 1 για έσοδο), καθορίζοντας αν αυτή είναι έσοδο ή έξοδο.
         """
         self.__enter__()  # Βεβαιωθείτε ότι η σύνδεση είναι ανοιχτή
-        insert_query = '''INSERT INTO income (date, name, frequency, category) VALUES (?, ?, ?, ?)'''
+        insert_query = '''INSERT INTO income (name, amount , category, date, frequency) VALUES (?, ?, ?, ?, ?)'''
         try:
-            self.cursor.execute(insert_query, (self.date, income_description, frequency_id, category_id))
+            self.cursor.execute(insert_query, (income_description, amount, category_id, date, frequency_id))
             self.conn.commit()  # Δέσμευση αλλαγών στη βάση δεδομένων
             print(f"Η εγγραφή {income_description} εισήχθη επιτυχώς.")
         except sqlite3.IntegrityError as e:
@@ -230,28 +241,3 @@ class Income(DatabaseConnection):
 class Expenses(DatabaseConnection):
     def __init__(self, db_path):
         super().__init__(db_path)
-
-if __name__ == "__main__":
-    # Αρχικοποίηση πινάκων - Δημιουργία σταθερών πινα΄κων
-    with DatabaseConnection(new_db) as db:
-        
-        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 0, 'μηνιαίο')
-        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 1, 'ετήσιο')
-        db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 2, 'μοναδιαίο')
-
-        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 0, 'έξοδο')
-        db.initializeTable(type_sql, 'type_table', 'type_id', 'name', 1, 'έσοδο')
-
-        db.create_table(category_sql)
-        db.create_table(income_sql)
-        db.create_table(expenses_sql)
-
-        tables = db.get_tables()
-    print(f"Δημιουργήσατε τους εξής πίνακες: {', '.join(tables)}")
-    print(f"Ο πίνακας {tables[0]} έχει τις στήλες")
-
-    # Καταχώρηση βασικών κατηγοριών
-    income_list = ["Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Δικαιώματα πνευματικής ιδιοκτησίας", "Κέρδη από μετοχές", "Αποζημιώσεις", "Συντάξεις", "Παροχές από ασφαλιστικά ταμεία", "Επιδοτήσεις", "Εισοδήματα από freelance εργασίες", "Άλλα έκτακτα έσοδα"]
-    dbin = Income(new_db)
-    for income in income_list:
-        dbin.InsertCategory(income)
