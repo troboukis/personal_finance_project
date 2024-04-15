@@ -92,6 +92,7 @@ class IncomeFrame(tk.Frame):
             return amount
         except ValueError:
             messagebox.showerror("Σφάλμα", "Έχετε εισάγει μη έγκυρο ποσό.")
+            self.delete_last_entry()
             return None  # Or handle it some other way
 
     def add_income(self):
@@ -102,15 +103,17 @@ class IncomeFrame(tk.Frame):
             'Date': self.income_date.get(),
             'Frequency': self.frequency.get()
         }
+        category_id = return_index(income_data['Category'], self.indb.showData('category_table'))
+        frequency_id = return_index(income_data['Frequency'], self.indb.showData('frequency_table'))
+        print(f"category_id = {category_id}")
         self.incomes.append(income_data)  # Add to the list of entries
         self.update_table()  # Update the table view
         self.indb.InsertIncome(
             income_data['Description'], 
             income_data['Amount'], 
-            return_category_index(income_data['Category'], self.category_options), 
+            category_id, 
             income_data['Date'], 
-            0)
-
+            frequency_id)
 
     def update_table(self):
         # Clear the current contents of the table
@@ -119,3 +122,8 @@ class IncomeFrame(tk.Frame):
         # Insert new data
         for exp in self.incomes:
             self.tree.insert('', 'end', values=(exp['Description'], exp['Amount'], exp['Category'], exp['Date'], exp['Frequency']))
+    
+    def delete_last_entry(self):
+        print(self.tree.get_children())
+        # for i in self.tree.get_children():
+        #     self.tree.delete(i)

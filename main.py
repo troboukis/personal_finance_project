@@ -99,8 +99,6 @@ if __name__ == "__main__":
         db.create_table(expenses_sql)
 
         tables = db.get_tables()
-    print(f"Δημιουργήσατε τους εξής πίνακες: {', '.join(tables)}")
-    print(f"Ο πίνακας {tables[0]} έχει τις στήλες")
 
     # Καταχώρηση βασικών κατηγοριών
     income_list = ["Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Δικαιώματα πνευματικής ιδιοκτησίας", "Κέρδη από μετοχές", "Αποζημιώσεις", "Συντάξεις", "Παροχές από ασφαλιστικά ταμεία", "Επιδοτήσεις", "Εισοδήματα από freelance εργασίες", "Άλλα έκτακτα έσοδα"]
@@ -110,13 +108,14 @@ if __name__ == "__main__":
 
     income_examples = [{"date": "2023-04-01", "name": "Μισθός Απριλίου", "category": "Μισθός", "amount": 1200},{"date": "2023-04-03", "name": "Ενοίκιο ακινήτου", "category": "Ενοίκια", "amount": 500},{"date": "2023-04-05", "name": "Πώληση προϊόντων", "category": "Πωλήσεις", "amount": 300},{"date": "2023-04-07", "name": "Τόκοι καταθέσεων", "category": "Τόκοι", "amount": 150},{"date": "2023-04-10", "name": "Δικαιώματα εκδόσεων", "category": "Δικαιώματα", "amount": 200},{"date": "2023-04-12", "name": "Κέρδη από μετοχές", "category": "Μετοχές", "amount": 250},{"date": "2023-04-15", "name": "Αποζημίωση ασφάλισης", "category": "Αποζημιώσεις", "amount": 1000},{"date": "2023-04-18", "name": "Συνταξιοδότηση", "category": "Συντάξεις", "amount": 800},{"date": "2023-04-20", "name": "Παροχές ασφαλιστικού ταμείου", "category": "Παροχές", "amount": 450},{"date": "2023-04-22", "name": "Επιδότηση επιχείρησης", "category": "Επιδοτήσεις", "amount": 600},{"date": "2023-04-25", "name": "Εισόδημα από freelance δουλειά", "category": "Freelance", "amount": 1200},{"date": "2023-04-27", "name": "Έσοδα από διαφημίσεις", "category": "Διαφημίσεις", "amount": 300},{"date": "2023-04-29", "name": "Έσοδα από εκμίσθωση εξοπλισμού", "category": "Εκμισθώσεις", "amount": 700},{"date": "2023-05-01", "name": "Μπόνους επίτευξης στόχων", "category": "Μπόνους", "amount": 500},{"date": "2023-05-03", "name": "Έσοδα από οργάνωση εκδηλώσεων", "category": "Εκδηλώσεις", "amount": 400}]
 
-    # Καταχώρηση ψεύτικων εσόδων
-    for i in income_examples:
-        dbin.InsertIncome(i['name'], 
-                          i['amount'], 
-                          return_category_index(i['category'], dbin.showData('category_table', dataframe=False)), 
-                          i['date'], 
-                          random.randint(0, 2))
+     # Καταχώρηση ψεύτικων εσόδων εάν δεν υπάρχουν
+    if len(dbin.showData('income'))<1:
+        for i in income_examples:
+            dbin.InsertIncome(i['name'], 
+                            i['amount'], 
+                            return_index(i['category'], dbin.showData('category_table', dataframe=False)), 
+                            i['date'], 
+                            random.randint(0, 2))
 
    
     main()

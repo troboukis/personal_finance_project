@@ -1,5 +1,4 @@
 import numpy as np
-import json
 import sqlite3
 import pandas as pd
 import datetime
@@ -10,12 +9,11 @@ def current_date():
     # Return the current date as a string
     return datetime.datetime.now().strftime("%Y-%m-%d")
 
-def return_category_index(string, data):
+def return_index(string, data):
     for item in data:
         if string == item[1]:
             return item[0]
-        else:
-            return 12
+    return 12
         
 type_sql = '''
     CREATE TABLE IF NOT EXISTS type_table (
@@ -210,6 +208,7 @@ class Income(DatabaseConnection):
         βάσει του τύπου της εγγραφής (0 για έξοδο, 1 για έσοδο). Στη συνέχεια, προσπαθεί να εισάγει την εγγραφή με τα δοθέντα 
         στοιχεία στη βάση δεδομένων. Εάν η εισαγωγή είναι επιτυχής, εκτυπώνει μήνυμα επιτυχίας. Σε περίπτωση σφάλματος 
         της βάσης δεδομένων, εκτυπώνει το αντίστοιχο μήνυμα.
+
         :param categ_id: Το ID της κατηγορίας όπου ανήκει η εγγραφή. Αντιστοιχεί σε μια υπάρχουσα εγγραφή στον πίνακα 'category_table'.
         :param freq_id: Το ID της συχνότητας με την οποία συμβαίνει η εγγραφή (π.χ., μηνιαία, ετήσια). Αντιστοιχεί σε μια υπάρχουσα εγγραφή στον πίνακα 'frequency_table'.
         :param type_id: Ο τύπος της εγγραφής (0 για έξοδο, 1 για έσοδο), καθορίζοντας αν αυτή είναι έσοδο ή έξοδο.
