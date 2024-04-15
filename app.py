@@ -1,10 +1,12 @@
-import numpy as np
 import sqlite3
 import pandas as pd
 import datetime
 # from expenses import ExpensesFrame
 # from income import IncomeFrame
             
+new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
+
+
 def current_date():
     # Return the current date as a string
     return datetime.datetime.now().strftime("%Y-%m-%d")
@@ -240,3 +242,4 @@ class Income(DatabaseConnection):
 class Expenses(DatabaseConnection):
     def __init__(self, db_path):
         super().__init__(db_path)
+        pass

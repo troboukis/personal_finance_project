@@ -65,15 +65,15 @@ def main():
     home_frame.grid_rowconfigure(1, weight=1)
 
     # Income Frame Widgets
-    tk.Label(income_frame, text="Έσοδα", font=("Helvetica", 35))\
-        .grid(row=10, column=0, sticky='ew', padx=20, pady=20)
-    bttk.Button(income_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame))\
-        .grid(row=10, column=0, sticky='ew')
 
-    # Expenses Frame Widgets are already configured in ExpensesFrame class using grid
-    # Adding the back to home button in the expenses frame (you need to adjust this in the ExpensesFrame class if not done)
-    tk.Label(income_frame, text="Έσοδα", font=("Helvetica", 35)).grid(row=10, column=0, sticky='ew', padx=10, pady=200)
-    bttk.Button(expenses_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame)).grid(row=10, column=0, columnspan=2, sticky='ew')
+    
+    bttk.Button(income_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame))\
+        .grid(row=10, column=0, columnspan=2, sticky='ew')
+
+    # Expenses Frame Widgets 
+    
+    bttk.Button(expenses_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame))\
+        .grid(row=10, column=0, columnspan=2, sticky='ew')
 
     # Analysis Frame Widgets
     tk.Label(analysis_frame, text="Ανάλυση", font=("Helvetica", 35)).grid(row=1, column=0, sticky='ew', padx=10, pady=200)

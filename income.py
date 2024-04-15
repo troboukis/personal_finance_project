@@ -16,26 +16,21 @@ class IncomeFrame(tk.Frame):
         self.category_options = [i[1] for i in self.indb.showData('category_table')]
 
         # Configure the style for the Treeview
-        style = ttk.Style(self)
         treeStyle = ttk.Style(self)
         treeStyle.theme_use("default")
         treeStyle.configure("Treeview", 
                 background="white", 
                 foreground="black", 
-                rowheight=5, 
+                rowheight=25,  # Adjusted row height
                 fieldbackground="white")
         treeStyle.map("Treeview", 
-                background=[('selected', '#0078D7')],  # Change selection color here
+                background=[('selected', '#0078D7')],
                 foreground=[('selected', 'white')])
-        # Styling for the Treeview heading
         treeStyle.configure("Treeview.Heading", 
-                font=("Helvetica", 13, 'italic'), 
+                font=("Courier", 13, 'italic'), 
                 background="#D3D3D3", 
                 foreground="black")
-        treeStyle.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
-        
-        # Setting 'gridlines' to 'both' to display grid lines in the Treeview
-        treeStyle.configure("Treeview", gridlines="both", borderwidth=1)
+        treeStyle.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])
 
         # Define StringVars
         self.income_description = tk.StringVar()
@@ -44,47 +39,52 @@ class IncomeFrame(tk.Frame):
         self.income_date = tk.StringVar()
         self.frequency = tk.StringVar()
 
-
-        tk.Label(self, text="Καταχώρηση εσόδων:", font=("Helvetica", 30)).grid(row=1, column=0, padx=10, pady=10, columnspan=2)
-        # Περιγραφή εσόδου
-        tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=10, sticky="w")
-        tk.Entry(self, textvariable=self.income_description, font=("Courier", 20)).grid(row=2, column=1, padx=10, pady=10, sticky="ew")
-
-        # Ποσό
-        tk.Label(self, text="Ποσό:", font=("Helvetica", 20)).grid(row=3, column=0, padx=10, pady=10, sticky="w")
-        tk.Entry(self, textvariable=self.income_amount, font=("Courier", 20)).grid(row=3, column=1, padx=10, pady=10, sticky="ew")
-
-        # Κατηγορία
-        tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=10, sticky="w")
-        ttk.Combobox(self, textvariable=self.income_category, font=("Courier", 20), values=self.category_options).grid(row=4, column=1, padx=10, pady=10, sticky="ew")
-
-        # Ημερομηνία
-        tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=10, sticky="w")
-        self.category_combobox = tk.Entry(self, textvariable=self.income_date, font=("Courier", 20)).grid(row=5, column=1, padx=10, pady=10, sticky="ew")
+        # UI Components
+        tk.Label(self, text="Καταχώρηση εσόδων:", font=("Helvetica", 30)).grid(row=0, column=0, columnspan=3, padx=10, pady=10)
         
+        tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        
+        tk.Entry(self, textvariable=self.income_description, font=("Courier", 20)).grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+        
+        tk.Label(self, text="Ποσό:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        
+        tk.Entry(self, textvariable=self.income_amount, font=("Courier", 20)).grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+        
+        tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=3, column=0, padx=10, pady=5, sticky="w")
+        
+        ttk.Combobox(self, textvariable=self.income_category, font=("Courier", 20), values=self.category_options).grid(row=3, column=1, padx=10, pady=5, sticky="ew")
+        
+        tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=5, sticky="w")
+        
+        tk.Entry(self, textvariable=self.income_date, font=("Courier", 20)).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+        
+        tk.Label(self, text="Συχνότητα", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=5, sticky="w")
+        
+        ttk.Combobox(self, textvariable=self.frequency, font=("Courier", 20), values=self.frequency_options).grid(row=5, column=1, padx=10, pady=5, sticky="ew")
+        
+        ttk.Button(self, text="Πρόσθεσε έσοδο", command=self.add_income).grid(row=6, column=0, columnspan=2, pady=10)
 
-        # Συχνότητα
-        tk.Label(self, text="Συχνότητα", font=("Helvetica", 20)).grid(row=6, column=0, padx=10, pady=10, sticky="w")
-        self.frequency_combobox = ttk.Combobox(self, textvariable=self.frequency, font=("Courier", 20), values=self.frequency_options)
-        self.frequency_combobox.grid(row=6, column=1, padx=10, pady=10, sticky="ew")
-        self.frequency_combobox.set('Έκτακτο')  # Optionally set a default value
-
-        # Submit Button
-        ttk.Button(self, text="Πρόσθεσε έσοδο", style='info.TButton', command=self.add_income).grid(row=7, column=0, columnspan=2, pady=20)
-
-         # # Vertical Separator
-        ttk.Separator(self, orient='vertical').grid(row=2, column=2, rowspan=6, sticky='ns')
-
-        # income Table
+        # Treeview
         self.tree = ttk.Treeview(self, columns=('Description', 'Amount', 'Category', 'Date', 'Frequency'), show='headings')
         self.tree.heading('Description', text='Περιγραφή')
         self.tree.heading('Amount', text='Ποσό σε ευρώ')
         self.tree.heading('Category', text='Κατηγορία')
         self.tree.heading('Date', text='Ημερομηνία')
         self.tree.heading('Frequency', text='Συχνότητα')
-        self.tree.grid(row=3, column=3, rowspan=6, padx=10, pady=10, sticky='nsew')
-        self.grid_columnconfigure(3, weight=1)  # Allows the table to expand
-        self.grid_rowconfigure(2, weight=0)     # Distributes extra vertical space to the treeview
+        self.tree.grid(row=1, column=2, rowspan=6, padx=10, pady=10, sticky='nsew')
+
+        # Scrollbars for Treeview
+        vscroll = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        hscroll = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=vscroll.set, xscrollcommand=hscroll.set)
+        vscroll.grid(row=1, column=3, rowspan=6, sticky='ns')
+        hscroll.grid(row=7, column=2, sticky='ew')
+
+        # Grid configuration for resizing
+        self.grid_columnconfigure(1, weight=0)
+        self.grid_rowconfigure(1, weight=1)
+
+
 
     def correct_amount(self):
         try:

@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
+from app import Expenses, new_db
+
+
 
 class ExpensesFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -9,21 +12,24 @@ class ExpensesFrame(tk.Frame):
         self.init_ui()
 
     def init_ui(self):
+        # self.exdb = Expenses(new_db)
+        # self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
+        # self.category_options = [i[1] for i in self.indb.showData('category_table')]
+
         # Configure the style for the Treeview
-        style = ttk.Style(self)
         treeStyle = ttk.Style(self)
         treeStyle.theme_use("default")
         treeStyle.configure("Treeview", 
                 background="white", 
                 foreground="black", 
-                rowheight=5, 
+                rowheight=25, 
                 fieldbackground="white")
         treeStyle.map("Treeview", 
                 background=[('selected', '#0078D7')],  # Change selection color here
                 foreground=[('selected', 'white')])
         # Styling for the Treeview heading
         treeStyle.configure("Treeview.Heading", 
-                font=("Helvetica", 13, 'italic'), 
+                font=("Courier", 13, 'italic'), 
                 background="#D3D3D3", 
                 foreground="black")
         treeStyle.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
@@ -39,8 +45,11 @@ class ExpensesFrame(tk.Frame):
         self.frequency = tk.StringVar()
 
         tk.Label(self, text="Καταχώρηση εξόδων:", font=("Helvetica", 30)).grid(row=1, column=0, padx=10, pady=10, columnspan=2)
+        
         # Περιγραφή εξόδου
+        
         tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=10, sticky="w")
+        
         tk.Entry(self, textvariable=self.expense_description, font=("Courier", 20)).grid(row=2, column=1, padx=10, pady=10, sticky="ew")
 
         # Vertical Separator
@@ -48,10 +57,12 @@ class ExpensesFrame(tk.Frame):
 
         # Ποσό
         tk.Label(self, text="Ποσό:", font=("Helvetica", 20)).grid(row=3, column=0, padx=10, pady=10, sticky="w")
+        
         tk.Entry(self, textvariable=self.expense_amount, font=("Courier", 20)).grid(row=3, column=1, padx=10, pady=10, sticky="ew")
 
         # Κατηγορία
         tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=10, sticky="w")
+        
         ttk.Combobox(self, textvariable=self.expense_category, font=("Courier", 20), values=["Food", "Transport", "Housing"]).grid(row=4, column=1, padx=10, pady=10, sticky="ew")
 
         # Ημερομηνία
@@ -67,15 +78,24 @@ class ExpensesFrame(tk.Frame):
 
         # Expenses Table
         self.tree = ttk.Treeview(self, columns=('Description', 'Amount', 'Category', 'Date', 'Frequency'), show='headings')
-        self.tree.heading('Description', text='Description')
-        self.tree.heading('Amount', text='Amount')
-        self.tree.heading('Category', text='Category')
-        self.tree.heading('Date', text='Date')
-        self.tree.heading('Frequency', text='Frequency')
+        self.tree.heading('Description', text='Περιγραφή')
+        self.tree.heading('Amount', text='Ποσό σε ευρώ')
+        self.tree.heading('Category', text='Κατηγορία')
+        self.tree.heading('Date', text='Ημερομηνία')
+        self.tree.heading('Frequency', text='Συχνότητα')
         self.tree.grid(row=2, column=3, rowspan=6, padx=10, pady=10, sticky='nsew')
         self.grid_columnconfigure(3, weight=1)  # Allows the table to expand
         self.grid_rowconfigure(2, weight=1)     # Distributes extra vertical space to the treeview
 
+    def correct_amount(self):
+        try:
+            amount = float(self.expense_amount.get())  # Try converting amount to float
+            return amount
+        except ValueError:
+            messagebox.showerror("Σφάλμα", "Έχετε εισάγει μη έγκυρο ποσό.")
+            self.delete_last_entry()
+            return None  # Or handle it some other way
+        
     def add_expense(self):
         expense_data = {
             'Description': self.expense_description.get(),
