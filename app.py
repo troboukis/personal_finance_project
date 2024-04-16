@@ -127,14 +127,28 @@ class DatabaseConnection:
         self.tables = self.cursor.fetchall()
         list_tables = [table[0] for table in self.tables]
         return list_tables
-        
+    
+    def printData(self, table):
+        '''
+        Επιστρέφει τα δεδομένα της βάσης δεδομένων. Εάν columns=True, τότε επιστρέφει ένα πλαίσιο δεδομένων. Διαφορετικά επιστρέφει ένα λεξικό.
+        '''
+        self.__enter__()
+        parameter = f'''
+        SELECT *
+        FROM {table} AS t
+        INNER JOIN frequency_table AS f ON t.frequency = f.freq_id
+        INNER JOIN category_table AS c ON t.category = c.category_id;
+        '''
+        self.cursor.execute(parameter)
+        data = self.cursor.fetchall()
+        return data
 
     def showData(self, table, dataframe=False):
         '''
         Επιστρέφει τα δεδομένα της βάσης δεδομένων. Εάν columns=True, τότε επιστρέφει ένα πλαίσιο δεδομένων. Διαφορετικά επιστρέφει ένα λεξικό.
         '''
         self.__enter__()
-        parameter = f"SELECT * FROM {table}"
+        parameter = f"SELECT * FROM {table}" # SELECT * FROM {table} JOIN frequency_table ON freq_id = frequency
         self.cursor.execute(parameter)
         data = self.cursor.fetchall()
         if not dataframe:

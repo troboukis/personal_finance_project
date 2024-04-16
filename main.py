@@ -117,5 +117,4 @@ if __name__ == "__main__":
                             i['date'], 
                             random.randint(0, 2))
 
-   
     main()

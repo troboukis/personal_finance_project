@@ -1,2 +1,3 @@
- # tk.Label(income_frame, text="Έσοδα", font=("Helvetica", 35))\
-    #     .grid(row=10, column=0, sticky='ew', padx=10, pady=200)
+from expenses import ExpensesFrame
+from income import IncomeFrame
+from app import *

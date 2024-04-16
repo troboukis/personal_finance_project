@@ -135,10 +135,9 @@ class IncomeFrame(tk.Frame):
         # for exp in self.incomes:
         #     self.tree.insert('', 'end', values=(exp['Description'], exp['Amount'], exp['Category'], exp['Date'], exp['Frequency']))
         # Fetch new data from the database
-        income_entries = self.indb.showData('income')
+        income_entries = self.indb.printData('income')
         for entry in income_entries:
-            print(entry)
-            self.tree.insert('', 'end', values=entry[1:])
+            self.tree.insert('', 'end', values=(entry[1], entry[2], entry[3], entry[7], entry[9]))
     
     def delete_last_entry(self):
         print(self.tree.get_children())
