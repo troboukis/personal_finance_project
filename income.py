@@ -9,12 +9,16 @@ class IncomeFrame(tk.Frame):
         super().__init__(parent, *args, **kwargs)
         self.incomes = []
         self.init_ui()
+        self.update_table()
 
     def init_ui(self):
         self.indb = Income(new_db)
         self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
         self.category_options = [i[1] for i in self.indb.showData('category_table')]
 
+        self.grid_columnconfigure(0, minsize=100)  # Smaller fixed minimum size for column 1
+        self.grid_columnconfigure(1, minsize=100)  # Smaller fixed minimum size for column 2
+        self.grid_columnconfigure(2, weight=1)
         # Configure the style for the Treeview
         treeStyle = ttk.Style(self)
         treeStyle.theme_use("default")
@@ -65,12 +69,20 @@ class IncomeFrame(tk.Frame):
         ttk.Button(self, text="Πρόσθεσε έσοδο", command=self.add_income).grid(row=6, column=0, columnspan=2, pady=10)
 
         # Treeview
-        self.tree = ttk.Treeview(self, columns=('Description', 'Amount', 'Category', 'Date', 'Frequency'), show='headings')
+        self.tree = ttk.Treeview(self, columns=('Date', 'Description', 'Amount', 'Frequency', 'Category'), show='headings')
+        self.tree.heading('Date', text='Ημερομηνία')
         self.tree.heading('Description', text='Περιγραφή')
         self.tree.heading('Amount', text='Ποσό σε ευρώ')
         self.tree.heading('Category', text='Κατηγορία')
-        self.tree.heading('Date', text='Ημερομηνία')
         self.tree.heading('Frequency', text='Συχνότητα')
+
+        # Centering column text
+        self.tree.column('Description', anchor='center', width=250)
+        self.tree.column('Amount', anchor='center', width=140)
+        self.tree.column('Category', anchor='center', width=180)
+        self.tree.column('Date', anchor='center', width=140)
+        self.tree.column('Frequency', anchor='center', width=100)
+
         self.tree.grid(row=1, column=2, rowspan=6, padx=10, pady=10, sticky='nsew')
 
         # Scrollbars for Treeview
@@ -120,8 +132,13 @@ class IncomeFrame(tk.Frame):
         for i in self.tree.get_children():
             self.tree.delete(i)
         # Insert new data
-        for exp in self.incomes:
-            self.tree.insert('', 'end', values=(exp['Description'], exp['Amount'], exp['Category'], exp['Date'], exp['Frequency']))
+        # for exp in self.incomes:
+        #     self.tree.insert('', 'end', values=(exp['Description'], exp['Amount'], exp['Category'], exp['Date'], exp['Frequency']))
+        # Fetch new data from the database
+        income_entries = self.indb.showData('income')
+        for entry in income_entries:
+            print(entry)
+            self.tree.insert('', 'end', values=entry[1:])
     
     def delete_last_entry(self):
         print(self.tree.get_children())
