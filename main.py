@@ -3,15 +3,17 @@ import ttkbootstrap as bttk
 from ttkbootstrap import Style
 import datetime
 from expenses import ExpensesFrame
-from income import IncomeFrame
+from income import IncomeFrame 
 from app import *
 import random
 
 new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
-
-def current_date():
+def current_date(show_full_date = False):
     # Return the current date as a string
-    return datetime.datetime.now().strftime("%b %d %Y, %H:%M")
+    if show_full_date:
+        return datetime.datetime.now().strftime("%b %d %Y, %H:%M")
+    else:
+        return datetime.datetime.now().strftime("%Y-%m-%d")
 
 def on_enter_frame(frame):
     # Define actions to take when a frame is entered
@@ -42,10 +44,11 @@ def main():
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
 
+    show_full_date = True
     # Add Date Label to Each Frame using grid
     date_label_format = ("Courier", 12)
     for i, frame in enumerate(frames):
-        tk.Label(frame, text=current_date(), font=date_label_format)\
+        tk.Label(frame, text=current_date(True), font=date_label_format)\
             .grid(row=0, column=0, sticky='w', padx=10, pady=10)
 
     # Home Frame Widgets
@@ -67,8 +70,8 @@ def main():
     # Income Frame Widgets
 
     
-    bttk.Button(income_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame))\
-        .grid(row=10, column=0, columnspan=2, sticky='ew')
+    # bttk.Button(income_frame, text="Πίσω", style='primary.TButton', command=lambda: show_frame(home_frame))\
+    #     .grid(row=0, column=0, columnspan=2, sticky='ew')
 
     # Expenses Frame Widgets 
     

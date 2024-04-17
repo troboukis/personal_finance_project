@@ -241,6 +241,29 @@ class Income(DatabaseConnection):
             self.__exit__(None, None, None)  # Κλείστε τη σύνδεση όταν τελειώσετε
             print("Aποσυνδεθήκατε από τη βάση δεδομένων")
 
+    def InsertExpense(self, expense_description, amount, category_id, date, frequency_id):
+        """
+        Εισάγει μια νέα εγγραφή στον πίνακα 'records'. Η μέθοδος αρχικά ζητά από τον χρήστη να εισάγει το έσοδο ή το έξοδο 
+        βάσει του τύπου της εγγραφής (0 για έξοδο, 1 για έσοδο). Στη συνέχεια, προσπαθεί να εισάγει την εγγραφή με τα δοθέντα 
+        στοιχεία στη βάση δεδομένων. Εάν η εισαγωγή είναι επιτυχής, εκτυπώνει μήνυμα επιτυχίας. Σε περίπτωση σφάλματος 
+        της βάσης δεδομένων, εκτυπώνει το αντίστοιχο μήνυμα.
+
+        :param categ_id: Το ID της κατηγορίας όπου ανήκει η εγγραφή. Αντιστοιχεί σε μια υπάρχουσα εγγραφή στον πίνακα 'category_table'.
+        :param freq_id: Το ID της συχνότητας με την οποία συμβαίνει η εγγραφή (π.χ., μηνιαία, ετήσια). Αντιστοιχεί σε μια υπάρχουσα εγγραφή στον πίνακα 'frequency_table'.
+        :param type_id: Ο τύπος της εγγραφής (0 για έξοδο, 1 για έσοδο), καθορίζοντας αν αυτή είναι έσοδο ή έξοδο.
+        """
+        self.__enter__()  # Βεβαιωθείτε ότι η σύνδεση είναι ανοιχτή
+        insert_query = '''INSERT INTO expenses (name, amount , category, date, frequency) VALUES (?, ?, ?, ?, ?)'''
+        try:
+            self.cursor.execute(insert_query, (expense_description, amount, category_id, date, frequency_id))
+            self.conn.commit()  # Δέσμευση αλλαγών στη βάση δεδομένων
+            print(f"Η εγγραφή {expense_description} εισήχθη επιτυχώς.")
+        except sqlite3.IntegrityError as e:
+            print("Εμφανίστηκε σφάλμα:", e)
+        finally:
+            self.__exit__(None, None, None)  # Κλείστε τη σύνδεση όταν τελειώσετε
+            print("Aποσυνδεθήκατε από τη βάση δεδομένων")
+
     def UpdateCategory(self):
         pass
 
