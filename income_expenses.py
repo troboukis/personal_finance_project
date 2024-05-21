@@ -11,7 +11,7 @@ def current_date(show_full_date = False):
     else:
         return datetime.datetime.now().strftime("%Y-%m-%d")
 
-class IncomeFrame(tk.Frame):
+class IncomeExpensesFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.incomes = []
@@ -74,15 +74,16 @@ class IncomeFrame(tk.Frame):
         # tk.Label(self, text="Καταχώρηση εσόδων:", font=("Helvetica", 30)).grid(row=0, column=0, columnspan=3, padx=10, pady=10)
         income_cb = tk.Checkbutton(self, text='Έσοδα', font=("Helvetica", 16),
                                    variable=self.show_income, onvalue=True, offvalue=False,
-                                   command=lambda: self.update_table())
+                                   command= self.toggle_expenses_off)
         income_cb.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        income_cb.select()
 
         # Checkbutton for showing expenses
         expenses_cb = tk.Checkbutton(self, text='Έξοδα', font=("Helvetica", 16),
                                      variable=self.show_expenses, onvalue=True, offvalue=False,
-                                     command=lambda: self.update_table())
+                                     command=self.toggle_income_off)
         expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="w")
-        
+       
         # --------------------------------ΠΕΡΙΓΡΑΦΗ-----------------------
         tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=5, sticky="w")
         tk.Entry(self, textvariable=self.description, font=("Courier", 20)).grid(row=2, column=1, padx=10, pady=5, sticky="ew")
@@ -206,9 +207,21 @@ class IncomeFrame(tk.Frame):
             for entry in expense_entries:
                 self.tree.insert('', 'end', values=(entry[1], entry[2], entry[3], entry[7], entry[9]))
         else:
-            self.action_button.config(text="No Action", command=lambda: None)
+            self.action_button.config(text="Καμία ενέργεια", command=lambda: None)
     
     def delete_last_entry(self):
         print(self.tree.get_children())
         # for i in self.tree.get_children():
         #     self.tree.delete(i)
+
+    def toggle_expenses_off(self):
+        # This method is called when the income checkbox is clicked
+        if self.show_income.get() == True:
+            self.show_expenses.set(False)  # Uncheck expenses
+        self.update_table()
+
+    def toggle_income_off(self):
+        # This method is called when the expenses checkbox is clicked
+        if self.show_expenses.get() == True:
+            self.show_income.set(False)  # Uncheck income
+        self.update_table()

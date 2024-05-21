@@ -2,8 +2,7 @@ import tkinter as tk
 import ttkbootstrap as bttk
 from ttkbootstrap import Style
 import datetime
-from expenses import ExpensesFrame
-from income import IncomeFrame 
+from income_expenses import IncomeExpensesFrame 
 from app import *
 import random
 
@@ -32,11 +31,10 @@ def main():
 
     # Creating frames for each section
     home_frame = tk.Frame(root)
-    income_frame = IncomeFrame(root)
-    expenses_frame = ExpensesFrame(root)
+    income_expenses_frame = IncomeExpensesFrame(root)
     analysis_frame = tk.Frame(root)
 
-    frames = [home_frame, income_frame, expenses_frame, analysis_frame]
+    frames = [home_frame, income_expenses_frame, analysis_frame]
     for frame in frames:
         frame.grid(row=0, column=0, sticky='nsew')
 
@@ -56,27 +54,16 @@ def main():
     # default separator style
     separator = bttk.Separator(home_frame, orient='horizontal')
     separator.grid(row=1, column=0, columnspan=3, sticky='ew', pady=(170, 90))
+    tk.Label(home_frame, text="Ομάδα Δ", font=("Helvetica", 25), background="#FFDEAD", foreground="#000000").grid(row=2, column=0, columnspan=3, sticky='ew', padx=0, pady=0)
+    tk.Label(home_frame, text="Θανάσης Τρομπούκης (συντονιστής), Αλέξανδρος Ρουμελιωτάκης, Νίκος Ταμπουρατζής, Γιώργος Παπαδόπουλος, Γιώργος Τσιώκος", font=("Helvetica", 15), background="#FFDEAD", foreground="#000000").grid(row=3, column=0, columnspan=3, sticky='ew', padx=0, pady=0)
 
-    bttk.Button(home_frame, text='Έσοδα', style='primary.TButton', command=lambda: show_frame(income_frame))\
-        .grid(row=2, column=0, padx=20, pady=40, sticky='ew')
-    bttk.Button(home_frame, text='Έξοδα', style='primary.TButton', command=lambda: show_frame(expenses_frame))\
-        .grid(row=2, column=1, padx=20, pady=20, sticky='ew')
+    bttk.Button(home_frame, text='Έσοδα - Έξοδα', style='primary.TButton', command=lambda: show_frame(income_expenses_frame))\
+        .grid(row=4, column=0, padx=20, pady=40, sticky='ew')
     bttk.Button(home_frame, text='Ανάλυση', style='primary.TButton', command=lambda: show_frame(analysis_frame))\
-        .grid(row=2, column=2, padx=20, pady=20, sticky='ew')
+        .grid(row=4, column=1, padx=20, pady=20, sticky='ew')
 
-    home_frame.grid_columnconfigure((0, 1, 2), weight=1, uniform="group1")
+    home_frame.grid_columnconfigure((0, 1), weight=1, uniform="group1")
     home_frame.grid_rowconfigure(1, weight=1)
-
-    # Income Frame Widgets
-
-    
-    # bttk.Button(income_frame, text="Πίσω", style='primary.TButton', command=lambda: show_frame(home_frame))\
-    #     .grid(row=0, column=0, columnspan=2, sticky='ew')
-
-    # Expenses Frame Widgets 
-    
-    bttk.Button(expenses_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame))\
-        .grid(row=10, column=0, columnspan=2, sticky='ew')
 
     # Analysis Frame Widgets
     tk.Label(analysis_frame, text="Ανάλυση", font=("Helvetica", 35)).grid(row=1, column=0, sticky='ew', padx=10, pady=200)
