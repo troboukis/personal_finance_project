@@ -3,6 +3,8 @@ from tkinter import ttk
 from app import *
 from tkinter import messagebox
 import datetime
+from tkinter import PhotoImage
+
 
 def current_date(show_full_date = False):
     # Return the current date as a string
@@ -79,14 +81,26 @@ class IncomeExpensesFrame(tk.Frame):
         self.income_cb = tk.Checkbutton(self, text='Έσοδα', font=("Helvetica", 16),
                                    variable=self.show_income, onvalue=True, offvalue=False,
                                    command= self.toggle_expenses_off)
-        self.income_cb.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.income_cb.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
         self.income_cb.select()
 
         # Checkbutton for showing expenses
         self.expenses_cb = tk.Checkbutton(self, text='Έξοδα', font=("Helvetica", 16),
                                      variable=self.show_expenses, onvalue=True, offvalue=False,
                                      command=self.toggle_income_off)
-        self.expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+        self.expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+
+        #--------------------------------ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗ---------------------------
+        # Configure the delete button
+        self.delete_button = ttk.Button(self, text='🗑', style='danger.TButton', command=self.delete_selection)
+        self.delete_button.grid(row=7, column=1, pady=10, sticky="nsew")  # Adjust grid parameters as needed
+
+        self.delete_button.grid_remove()  # Start with the button hidden
+
+        # Style for the delete button
+        style = ttk.Style(self)
+        style.configure('danger.TButton', font=('Helvetica', 16), background='red', foreground='white')
+
        
         # --------------------------------ΠΕΡΙΓΡΑΦΗ-----------------------
         tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=5, sticky="w")
@@ -112,7 +126,7 @@ class IncomeExpensesFrame(tk.Frame):
         style = ttk.Style(self)
         style.configure('success.TButton', font=('Helvetica', 16), background='green', foreground='white')
         self.action_button = ttk.Button(self, style='success.TButton')
-        self.action_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="ew")
+        self.action_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="nsew")
         
         #---------------------------------------Treeview---------------------------------------
         self.tree.heading('Date', text='Ημερομηνία')
@@ -145,7 +159,8 @@ class IncomeExpensesFrame(tk.Frame):
 
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
 
-        # Δημιουργούμε δύο μεταβλητές που ορίζουν σε τι mode είμαστε. Είμαστε σε edit mode ή όχι?
+        # Δημιουργούμε δύο μεταβλητές που ορίζουν: α) σε τι mode είμαστε. Είμαστε σε edit mode ή όχι? β) ποιο είναι το selected item από το treeview?
+
         self.edit_mode = False
         self.current_item = None
 
@@ -184,7 +199,6 @@ class IncomeExpensesFrame(tk.Frame):
                 self.toggle_edit_mode(True, current_selected_item, income_flag=True)
             elif self.show_expenses.get() and current_selected_item:
                 self.toggle_edit_mode(True, current_selected_item, income_flag=False)
-
 
 
     def correct_amount(self):
@@ -259,11 +273,7 @@ class IncomeExpensesFrame(tk.Frame):
                 self.tree.insert('', 'end', values=(entry[1], entry[2], entry[3], entry[7], entry[9]))
         else:
             self.action_button.config(text="Καμία ενέργεια", command=lambda: None)
-    
-    def delete_last_entry(self):
-        print(self.tree.get_children())
-        # for i in self.tree.get_children():
-        #     self.tree.delete(i)
+
 
     def toggle_expenses_off(self):
         # This method is called when the income checkbox is clicked
@@ -280,18 +290,29 @@ class IncomeExpensesFrame(tk.Frame):
     def toggle_edit_mode(self, edit, item_id=None, income_flag=None):
         self.edit_mode = edit
         self.current_item = item_id
-        print(self.current_item)
-        print(item_id)
+        
+        print(f"Edit mode: {edit}, Item ID: {item_id}, Income flag: {income_flag}")
+
         if income_flag:
             if edit:
                 self.action_button.config(text="Ενημέρωση", command=self.update_income)
+                self.action_button.grid(columnspan=1)
+                self.delete_button.grid()  # Show the delete button when in edit mode
             else:
-                self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)  # Default action
+                self.clear_input()
+                # self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)  # Default action
+                # self.action_button.grid(columnspan=2)
+                # self.delete_button.grid_remove()  # Hide the delete button when not in edit mode
         else:
             if edit:
                 self.action_button.config(text="Ενημέρωση", command=self.update_expense)
+                self.action_button.grid(columnspan=1)
+                self.delete_button.grid()
             else:
-                self.action_button.config(text="Πρόσθεσε έξοδο", command=self.add_income)  # Default action
+                # self.action_button.config(text="Πρόσθεσε έξοδο", command=self.add_expense)
+                # self.delete_button.grid_remove()
+                self.clear_input()
+
 
     def clear_input(self):
         self.description.set("")
@@ -301,6 +322,8 @@ class IncomeExpensesFrame(tk.Frame):
         self.frequency.set(self.frequency_options[2])
 
         self.tree.selection_remove(self.tree.selection())
+        self.delete_button.grid_remove()
+        self.action_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="nsew")
         self.update_table()
         
     def update_income(self):
@@ -316,20 +339,18 @@ class IncomeExpensesFrame(tk.Frame):
         income_id = self.indb.GetID(original_description, original_date, original_amount)
         
         self.indb.UpdateIncome(new_description, new_date, new_amount, income_id[0])
-        # cursor.execute("""
-        #     UPDATE income
-        #     SET name = ?, date = ?, amount = ?
-        #     WHERE income_id = ?;
-        # """, (new_description, new_date, new_amount, income_id[0]))
-        
-        # conn.commit()
-        # print("Income record updated successfully, ID:", income_id[0])
-        # conn.close()
-
         # Reset UI components
         self.clear_input()  # This clears inputs and deselects the Treeview
         
+    def delete_selection(self):
+        original_description = self.original_data['Description']
+        original_amount = self.original_data['Amount']
+        original_date = self.original_data['Date']
 
+        income_id = self.indb.GetID(original_description, original_date, original_amount)
+        self.indb.DeleteIncome(income_id[0])
+        self.clear_input()
+        
 
     def update_expense(self):
         conn = sqlite3.connect(new_db)
@@ -342,19 +363,9 @@ class IncomeExpensesFrame(tk.Frame):
         new_description = self.description.get()
         new_amount = self.correct_amount()
         new_date = self.date.get()
-
-        cursor.execute("""
-            SELECT expenses_id
-            FROM expenses
-            WHERE name = ? AND date = ? AND amount = ?;
-        """, (original_description, original_date, original_amount))
         
-        expenses_id = cursor.fetchone()
+        expenses_id = self.indb.GetID(original_description, original_date, original_amount)
         
-        if not expenses_id:
-            print("No income record found matching the criteria.")
-            conn.close()
-            return
 
         cursor.execute("""
             UPDATE expenses

@@ -257,10 +257,10 @@ class Income(DatabaseConnection):
         
         if not record_id:
             print("No record found matching the criteria.")
-            self.__exit__()
+            self.__exit__(None, None, None)
             return
         else:
-            self.__exit__()
+            self.__exit__(None, None, None)
             return record_id
         
     
@@ -275,7 +275,7 @@ class Income(DatabaseConnection):
         
         self.conn.commit()
         print("Income record updated successfully, ID:", id)
-        self.__exit__()
+        self.__exit__(None, None, None)
 
     def UpdateExpenses(self, n_description, n_date, n_amount, id):
         self.__enter__()
@@ -288,18 +288,33 @@ class Income(DatabaseConnection):
         
         self.conn.commit()
         print("Expenses record updated successfully, ID:", id)
-        self.__exit__()
+        self.__exit__(None, None, None)
+
+    def DeleteIncome(self, income_id):
+        self.__enter__()  # Start transaction or acquire database resources
+
+        try:
+            # Execute the DELETE SQL command
+            self.cursor.execute("""
+                DELETE FROM income
+                WHERE income_id = ?;
+            """, (income_id,))
+
+            self.conn.commit()  # Commit the transaction
+            print(f"Income record deleted successfully, ID: {income_id}")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            self.conn.rollback()  # Rollback the transaction in case of error
+
+        finally:
+            self.__exit__(None, None, None)  # Ensure resources are cleaned up properly
+
 
 
     def UpdateCategory(self):
         pass
 
-    def update_income_in_db(self, item_id, updated_data):
-        conn = sqlite3.connect('new_db.db')
-        cursor = conn.cursor()
-        cursor.execute("""UPDATE income SET description = ?, amount = ?, category = ?, date = ?, frequency = ? WHERE id = ? """, (updated_data['Description'], updated_data['Amount'], updated_data['Category'], updated_data['Date'], updated_data['Frequency'], item_id))
-        conn.commit()
-        conn.close()
         
     def DeleteCategory(self):
         pass
