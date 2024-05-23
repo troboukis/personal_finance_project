@@ -304,8 +304,6 @@ class IncomeExpensesFrame(tk.Frame):
         self.update_table()
         
     def update_income(self):
-        conn = sqlite3.connect(new_db)
-        cursor = conn.cursor()
 
         original_description = self.original_data['Description']
         original_amount = self.original_data['Amount']
@@ -314,29 +312,19 @@ class IncomeExpensesFrame(tk.Frame):
         new_description = self.description.get()
         new_amount = self.correct_amount()
         new_date = self.date.get()
-
-        cursor.execute("""
-            SELECT income_id
-            FROM income
-            WHERE name = ? AND date = ? AND amount = ?;
-        """, (original_description, original_date, original_amount))
         
-        income_id = cursor.fetchone()
+        income_id = self.indb.GetID(original_description, original_date, original_amount)
         
-        if not income_id:
-            print("No income record found matching the criteria.")
-            conn.close()
-            return
-
-        cursor.execute("""
-            UPDATE income
-            SET name = ?, date = ?, amount = ?
-            WHERE income_id = ?;
-        """, (new_description, new_date, new_amount, income_id[0]))
+        self.indb.UpdateIncome(new_description, new_date, new_amount, income_id[0])
+        # cursor.execute("""
+        #     UPDATE income
+        #     SET name = ?, date = ?, amount = ?
+        #     WHERE income_id = ?;
+        # """, (new_description, new_date, new_amount, income_id[0]))
         
-        conn.commit()
-        print("Income record updated successfully, ID:", income_id[0])
-        conn.close()
+        # conn.commit()
+        # print("Income record updated successfully, ID:", income_id[0])
+        # conn.close()
 
         # Reset UI components
         self.clear_input()  # This clears inputs and deselects the Treeview

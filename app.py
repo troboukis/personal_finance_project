@@ -244,26 +244,51 @@ class Income(DatabaseConnection):
             self.__exit__(None, None, None)  # Κλείστε τη σύνδεση όταν τελειώσετε
             print("Aποσυνδεθήκατε από τη βάση δεδομένων")
     
-    def UpdateIncome(self, income_id, name, amount, category_id, date, frequency_id):
-        """
-        Updates an existing income record.
-        :param income_id: The primary key ID of the income to update.
-        """
+    def GetID(self, or_description, or_date, or_amount):
+        self.__enter__()  # Ensure the connection is open
+
+        self.cursor.execute("""
+            SELECT income_id
+            FROM income
+            WHERE name = ? AND date = ? AND amount = ?;
+        """, (or_description, or_date, or_amount))
+        
+        record_id = self.cursor.fetchone()
+        
+        if not record_id:
+            print("No record found matching the criteria.")
+            self.__exit__()
+            return
+        else:
+            self.__exit__()
+            return record_id
+        
+    
+    def UpdateIncome(self, n_description, n_date, n_amount, id):
         self.__enter__()
-        update_query = '''
-        UPDATE income 
-        SET name = ?, amount = ?, category = ?, date = ?, frequency = ?
-        WHERE income_id = ?
-        '''
-        try:
-            parameters = (name, amount, category_id, date, frequency_id, income_id[0])
-            self.cursor.execute(update_query, parameters)
-            self.conn.commit()
-            print(f"Η εγγραφή εσόδων με ID {income_id} ενημερώθηκε επιτυχώς.")
-        except sqlite3.IntegrityError as e:
-            print("Εμφανίστηκε σφάλμα:", e)
-        finally:
-            self.__exit__(None, None, None)
+
+        self.cursor.execute("""
+            UPDATE income
+            SET name = ?, date = ?, amount = ?
+            WHERE income_id = ?;
+        """, (n_description, n_date, n_amount, id))
+        
+        self.conn.commit()
+        print("Income record updated successfully, ID:", id)
+        self.__exit__()
+
+    def UpdateExpenses(self, n_description, n_date, n_amount, id):
+        self.__enter__()
+
+        self.cursor.execute("""
+            UPDATE expenses
+            SET name = ?, date = ?, amount = ?
+            WHERE expenses_id = ?;
+        """, (n_description, n_date, n_amount, id))
+        
+        self.conn.commit()
+        print("Expenses record updated successfully, ID:", id)
+        self.__exit__()
 
 
     def UpdateCategory(self):
