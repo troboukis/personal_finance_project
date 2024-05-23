@@ -14,6 +14,9 @@ def current_date(show_full_date = False):
 class IncomeExpensesFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        
+        self.last_item = None  # Attribute to store the ID of the last clicked item
+
         self.incomes = []
         self.expenses = []
 
@@ -27,6 +30,7 @@ class IncomeExpensesFrame(tk.Frame):
 
     def init_ui(self):
         self.indb = Income(new_db)
+        self.db = DatabaseConnection(new_db)
         self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
         self.category_options = [i[1] for i in self.indb.showData('category_table')]
 
@@ -72,17 +76,17 @@ class IncomeExpensesFrame(tk.Frame):
 
         # --------------------------------ΕΣΟΔΑ - ΕΞΟΔΑ ΚΟΥΜΠΙΑ--------------------
         # tk.Label(self, text="Καταχώρηση εσόδων:", font=("Helvetica", 30)).grid(row=0, column=0, columnspan=3, padx=10, pady=10)
-        income_cb = tk.Checkbutton(self, text='Έσοδα', font=("Helvetica", 16),
+        self.income_cb = tk.Checkbutton(self, text='Έσοδα', font=("Helvetica", 16),
                                    variable=self.show_income, onvalue=True, offvalue=False,
                                    command= self.toggle_expenses_off)
-        income_cb.grid(row=1, column=0, padx=10, pady=10, sticky="w")
-        income_cb.select()
+        self.income_cb.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.income_cb.select()
 
         # Checkbutton for showing expenses
-        expenses_cb = tk.Checkbutton(self, text='Έξοδα', font=("Helvetica", 16),
+        self.expenses_cb = tk.Checkbutton(self, text='Έξοδα', font=("Helvetica", 16),
                                      variable=self.show_expenses, onvalue=True, offvalue=False,
                                      command=self.toggle_income_off)
-        expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+        self.expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="w")
        
         # --------------------------------ΠΕΡΙΓΡΑΦΗ-----------------------
         tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=5, sticky="w")
@@ -137,6 +141,50 @@ class IncomeExpensesFrame(tk.Frame):
         self.grid_columnconfigure(1, weight=0)
         self.grid_rowconfigure(1, weight=1)
 
+        # ON SELECT
+
+        self.tree.bind("<<TreeviewSelect>>", self.on_select)
+
+        # Δημιουργούμε δύο μεταβλητές που ορίζουν σε τι mode είμαστε. Είμαστε σε edit mode ή όχι?
+        self.edit_mode = False
+        self.current_item = None
+
+    def on_select(self, event):
+        current_selected_item = self.tree.selection()
+
+        # Check if the currently selected item was already selected before
+        if current_selected_item == self.last_item:
+            # Deselect and reset the last_item
+            self.tree.selection_remove(current_selected_item)
+            self.last_item = None
+            self.clear_input()  # Clear the form or reset the UI as necessary
+        else:
+            # Update the form only if a new item is selected
+            if current_selected_item:
+                item = self.tree.item(current_selected_item)
+                data = item['values']
+                self.original_data = {
+                    'Date': data[0],
+                    'Description': data[1],
+                    'Amount': data[2],
+                    'Frequency': data[3],
+                    'Category': data[4]
+                }
+                self.description.set(data[1])
+                self.amount.set(data[2])
+                self.date.set(data[0])
+                self.category.set(data[4])
+                self.frequency.set(data[3])
+            
+            # Store the currently selected item as the last item
+            self.last_item = current_selected_item
+
+            # Handle the toggle edit mode based on type
+            if self.show_income.get() and current_selected_item:
+                self.toggle_edit_mode(True, current_selected_item, income_flag=True)
+            elif self.show_expenses.get() and current_selected_item:
+                self.toggle_edit_mode(True, current_selected_item, income_flag=False)
+
 
 
     def correct_amount(self):
@@ -168,6 +216,7 @@ class IncomeExpensesFrame(tk.Frame):
             income_data['Date'], 
             frequency_id)
         self.update_table()  # Update the table view
+        self.clear_input()
 
     def add_expense(self):
         expense_data = {
@@ -189,6 +238,7 @@ class IncomeExpensesFrame(tk.Frame):
             expense_data['Date'], 
             frequency_id)
         self.update_table()  # Update the table view
+        self.clear_input()
 
     def update_table(self):
         # Clear the current contents of the table
@@ -196,6 +246,7 @@ class IncomeExpensesFrame(tk.Frame):
             self.tree.delete(i)
 
         if self.show_income.get():
+            print(self.show_income.get())
             self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)
             income_entries = self.indb.printData("income")
             for entry in income_entries:
@@ -225,3 +276,107 @@ class IncomeExpensesFrame(tk.Frame):
         if self.show_expenses.get() == True:
             self.show_income.set(False)  # Uncheck income
         self.update_table()
+
+    def toggle_edit_mode(self, edit, item_id=None, income_flag=None):
+        self.edit_mode = edit
+        self.current_item = item_id
+        print(self.current_item)
+        print(item_id)
+        if income_flag:
+            if edit:
+                self.action_button.config(text="Ενημέρωση", command=self.update_income)
+            else:
+                self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)  # Default action
+        else:
+            if edit:
+                self.action_button.config(text="Ενημέρωση", command=self.update_expense)
+            else:
+                self.action_button.config(text="Πρόσθεσε έξοδο", command=self.add_income)  # Default action
+
+    def clear_input(self):
+        self.description.set("")
+        self.amount.set("")
+        self.category.set(self.category_options[-1])
+        self.date.set(current_date())
+        self.frequency.set(self.frequency_options[2])
+
+        self.tree.selection_remove(self.tree.selection())
+        self.update_table()
+        
+    def update_income(self):
+        conn = sqlite3.connect(new_db)
+        cursor = conn.cursor()
+
+        original_description = self.original_data['Description']
+        original_amount = self.original_data['Amount']
+        original_date = self.original_data['Date']
+        
+        new_description = self.description.get()
+        new_amount = self.correct_amount()
+        new_date = self.date.get()
+
+        cursor.execute("""
+            SELECT income_id
+            FROM income
+            WHERE name = ? AND date = ? AND amount = ?;
+        """, (original_description, original_date, original_amount))
+        
+        income_id = cursor.fetchone()
+        
+        if not income_id:
+            print("No income record found matching the criteria.")
+            conn.close()
+            return
+
+        cursor.execute("""
+            UPDATE income
+            SET name = ?, date = ?, amount = ?
+            WHERE income_id = ?;
+        """, (new_description, new_date, new_amount, income_id[0]))
+        
+        conn.commit()
+        print("Income record updated successfully, ID:", income_id[0])
+        conn.close()
+
+        # Reset UI components
+        self.clear_input()  # This clears inputs and deselects the Treeview
+        
+
+
+    def update_expense(self):
+        conn = sqlite3.connect(new_db)
+        cursor = conn.cursor()
+
+        original_description = self.original_data['Description']
+        original_amount = self.original_data['Amount']
+        original_date = self.original_data['Date']
+        
+        new_description = self.description.get()
+        new_amount = self.correct_amount()
+        new_date = self.date.get()
+
+        cursor.execute("""
+            SELECT expenses_id
+            FROM expenses
+            WHERE name = ? AND date = ? AND amount = ?;
+        """, (original_description, original_date, original_amount))
+        
+        expenses_id = cursor.fetchone()
+        
+        if not expenses_id:
+            print("No income record found matching the criteria.")
+            conn.close()
+            return
+
+        cursor.execute("""
+            UPDATE expenses
+            SET name = ?, date = ?, amount = ?
+            WHERE expenses_id = ?;
+        """, (new_description, new_date, new_amount, expenses_id[0]))
+        
+        conn.commit()
+        print("Expenses record updated successfully, ID:", expenses_id[0])
+        conn.close()
+
+        # Reset UI components
+        self.clear_input()  # This clears inputs and deselects the Treeview

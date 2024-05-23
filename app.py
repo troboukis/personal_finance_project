@@ -77,6 +77,7 @@ class DatabaseConnection:
         self.db_path = db_path
         self.conn = None
         self.date = current_date()
+        self.cursor = None
 
     def __enter__(self):
         if self.conn is None:
@@ -97,27 +98,6 @@ class DatabaseConnection:
         self.cursor.execute(sql_command)
         self.conn.commit()
 
-    def retrieveID(self, table_name, column_name, category_name):
-        """
-        Ανακτά το id μίας εγγραφής.
-        
-        :param table_name: Το όνομα του πίνακα προς αναζήτηση.
-        :param column_name: Το όνομα της στήλης ID που θα ανακτηθεί.
-        :param category_name: Το όνομα της κατηγορίας για αναζήτηση.
-        """
-        # Validate or sanitize table_name and column_name if necessary
-        allowed_tables = {"category_table": ["category_id"]}
-        if table_name in allowed_tables and column_name in allowed_tables[table_name]:
-            query = f"SELECT {column_name} FROM {table_name} WHERE name = ?"
-            self.cursor.execute(query, (category_name,))
-            result = self.cursor.fetchone()
-            if result:
-                return result[0]
-            else:
-                print(f"Δεν βρέθηκε κατηγορία με το όνομα '{category_name}'.")
-                return None
-        else:
-            raise ValueError("Μη έγκυρο όνομα πίνακα ή όνομα στήλης.")
 
     def get_tables(self):
         '''
@@ -263,12 +243,38 @@ class Income(DatabaseConnection):
         finally:
             self.__exit__(None, None, None)  # Κλείστε τη σύνδεση όταν τελειώσετε
             print("Aποσυνδεθήκατε από τη βάση δεδομένων")
+    
+    def UpdateIncome(self, income_id, name, amount, category_id, date, frequency_id):
+        """
+        Updates an existing income record.
+        :param income_id: The primary key ID of the income to update.
+        """
+        self.__enter__()
+        update_query = '''
+        UPDATE income 
+        SET name = ?, amount = ?, category = ?, date = ?, frequency = ?
+        WHERE income_id = ?
+        '''
+        try:
+            parameters = (name, amount, category_id, date, frequency_id, income_id[0])
+            self.cursor.execute(update_query, parameters)
+            self.conn.commit()
+            print(f"Η εγγραφή εσόδων με ID {income_id} ενημερώθηκε επιτυχώς.")
+        except sqlite3.IntegrityError as e:
+            print("Εμφανίστηκε σφάλμα:", e)
+        finally:
+            self.__exit__(None, None, None)
+
 
     def UpdateCategory(self):
         pass
 
-    def UpdateRecord(self):
-        pass
+    def update_income_in_db(self, item_id, updated_data):
+        conn = sqlite3.connect('new_db.db')
+        cursor = conn.cursor()
+        cursor.execute("""UPDATE income SET description = ?, amount = ?, category = ?, date = ?, frequency = ? WHERE id = ? """, (updated_data['Description'], updated_data['Amount'], updated_data['Category'], updated_data['Date'], updated_data['Frequency'], item_id))
+        conn.commit()
+        conn.close()
         
     def DeleteCategory(self):
         pass
