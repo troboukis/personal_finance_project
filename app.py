@@ -263,7 +263,25 @@ class Income(DatabaseConnection):
             self.__exit__(None, None, None)
             return record_id
         
-    
+    def GetExpensesID(self, or_description, or_date, or_amount):
+        self.__enter__()  # Ensure the connection is open
+
+        self.cursor.execute("""
+            SELECT expenses_id
+            FROM expenses
+            WHERE name = ? AND date = ? AND amount = ?;
+        """, (or_description, or_date, or_amount))
+        
+        record_id = self.cursor.fetchone()
+        
+        if not record_id:
+            print("No record found matching the criteria.")
+            self.__exit__(None, None, None)
+            return
+        else:
+            self.__exit__(None, None, None)
+            return record_id
+        
     def UpdateIncome(self, n_description, n_date, n_amount, id):
         self.__enter__()
 
@@ -310,6 +328,25 @@ class Income(DatabaseConnection):
         finally:
             self.__exit__(None, None, None)  # Ensure resources are cleaned up properly
 
+    def DeleteExpense(self, expense_id):
+        self.__enter__()  # Start transaction or acquire database resources
+
+        try:
+            # Execute the DELETE SQL command
+            self.cursor.execute("""
+                DELETE FROM expenses
+                WHERE expenses_id = ?;
+            """, (expense_id,))
+
+            self.conn.commit()  # Commit the transaction
+            print(f"Expense record deleted successfully, ID: {expense_id}")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            self.conn.rollback()  # Rollback the transaction in case of error
+
+        finally:
+            self.__exit__(None, None, None)  # Ensure resources are cleaned up properly
 
 
     def UpdateCategory(self):

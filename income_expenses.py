@@ -90,6 +90,10 @@ class IncomeExpensesFrame(tk.Frame):
                                      command=self.toggle_income_off)
         self.expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
+        #--------------------------------ΚΟΥΜΠΙ SETTINGS---------------------------
+        self.settings_button = ttk.Button(self, text='⚙️', command=lambda: print("Settings Clicked"))
+        self.settings_button.grid(row=0, column=0, sticky='e')
+        
         #--------------------------------ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗ---------------------------
         # Configure the delete button
         self.delete_button = ttk.Button(self, text='🗑', style='danger.TButton', command=self.delete_selection)
@@ -343,19 +347,25 @@ class IncomeExpensesFrame(tk.Frame):
         self.clear_input()  # This clears inputs and deselects the Treeview
         
     def delete_selection(self):
-        original_description = self.original_data['Description']
-        original_amount = self.original_data['Amount']
-        original_date = self.original_data['Date']
+        if self.show_income.get():
+            original_description = self.original_data['Description']
+            original_amount = self.original_data['Amount']
+            original_date = self.original_data['Date']
 
-        income_id = self.indb.GetID(original_description, original_date, original_amount)
-        self.indb.DeleteIncome(income_id[0])
-        self.clear_input()
+            income_id = self.indb.GetID(original_description, original_date, original_amount)
+            self.indb.DeleteIncome(income_id[0])
+            self.clear_input()
+        elif self.show_income.get()==False:
+            original_description = self.original_data['Description']
+            original_amount = self.original_data['Amount']
+            original_date = self.original_data['Date']
+
+            expenses_id = self.indb.GetExpensesID(original_description, original_date, original_amount)
+            self.indb.DeleteExpense(expenses_id[0])
+            self.clear_input()
         
 
     def update_expense(self):
-        conn = sqlite3.connect(new_db)
-        cursor = conn.cursor()
-
         original_description = self.original_data['Description']
         original_amount = self.original_data['Amount']
         original_date = self.original_data['Date']
@@ -364,18 +374,8 @@ class IncomeExpensesFrame(tk.Frame):
         new_amount = self.correct_amount()
         new_date = self.date.get()
         
-        expenses_id = self.indb.GetID(original_description, original_date, original_amount)
-        
-
-        cursor.execute("""
-            UPDATE expenses
-            SET name = ?, date = ?, amount = ?
-            WHERE expenses_id = ?;
-        """, (new_description, new_date, new_amount, expenses_id[0]))
-        
-        conn.commit()
-        print("Expenses record updated successfully, ID:", expenses_id[0])
-        conn.close()
+        expenses_id = self.indb.GetExpensesID(original_description, original_date, original_amount)
+        self.indb.UpdateExpenses(new_description, new_date, new_amount, expenses_id[0])
 
         # Reset UI components
         self.clear_input()  # This clears inputs and deselects the Treeview
