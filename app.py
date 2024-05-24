@@ -6,6 +6,8 @@ import datetime
             
 new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
 
+income_list = ["Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Δικαιώματα πνευματικής ιδιοκτησίας", "Κέρδη από μετοχές", "Αποζημιώσεις", "Συντάξεις", "Παροχές από ασφαλιστικά ταμεία", "Επιδοτήσεις", "Εισοδήματα από freelance εργασίες", "Άλλα έκτακτα έσοδα", "Πρόσθεσε νέο έσοδο"]
+expenses_list = ["Μισθοδοσία προσωπικού", "Ενοίκια για επαγγελματικές στεγάσεις", "Αγορές αγαθών", "Κόστος υπηρεσιών", "Διαφημιστικές δαπάνες", "Τηλεπικοινωνίες", "Δαπάνες για ενέργεια (ηλεκτρισμός, νερό, καύσιμα)", "Ασφάλειες", "Φόροι και τέλη", "Διοικητικά έξοδα", "Ταξιδιωτικά έξοδα", "Δαπάνες για αυτοκίνητα και μεταφορικά μέσα", "Τόκοι δανείων", "Συντήρηση και επισκευές", "Έξοδα νομικών υπηρεσιών και συμβούλων", "Άλλα έξοδα λειτουργίας", "Πρόσθεσε νέο έξοδο"]
 
 def current_date():
     # Return the current date as a string
@@ -129,6 +131,7 @@ class DatabaseConnection:
         '''
         self.__enter__()
         parameter = f"SELECT * FROM {table}" # SELECT * FROM {table} JOIN frequency_table ON freq_id = frequency
+        
         self.cursor.execute(parameter)
         data = self.cursor.fetchall()
         if not dataframe:
@@ -187,9 +190,14 @@ class Income(DatabaseConnection):
         else:
             insert_query = "INSERT INTO category_table (name, type) VALUES (?, ?)"
             try:
-                self.cursor.execute(insert_query, (category_name, 1))  # Correctly using placeholders
-                self.conn.commit()  # Commit changes to the database
-                print(f"Η κατηγορία {category_name} εισήχθη επιτυχώς.")
+                if category_name in income_list:
+                    self.cursor.execute(insert_query, (category_name, 1))  # Correctly using placeholders
+                    self.conn.commit()  # Commit changes to the database
+                    print(f"Η κατηγορία {category_name} εισήχθη επιτυχώς.")
+                else:
+                    self.cursor.execute(insert_query, (category_name, 0))  # Correctly using placeholders
+                    self.conn.commit()  # Commit changes to the database
+                    print(f"Η κατηγορία {category_name} εισήχθη επιτυχώς.")
                 
             except sqlite3.IntegrityError as e:
                 print("Εμφανίστηκε σφάλμα:", e)

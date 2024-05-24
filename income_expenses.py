@@ -34,11 +34,13 @@ class IncomeExpensesFrame(tk.Frame):
         self.indb = Income(new_db)
         self.db = DatabaseConnection(new_db)
         self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
-        self.category_options = [i[1] for i in self.indb.showData('category_table')]
-
+        self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2]==1]
+        self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2]==0]
+        
         self.grid_columnconfigure(0, minsize=200)  # Smaller fixed minimum size for column 1
         self.grid_columnconfigure(1, minsize=100)  # Smaller fixed minimum size for column 2
         self.grid_columnconfigure(2, weight=1)
+
 
         # Configure the style for the Treeview
         treeStyle = ttk.Style(self)
@@ -64,7 +66,7 @@ class IncomeExpensesFrame(tk.Frame):
         self.description = tk.StringVar()
         self.amount = tk.StringVar()
         self.category = tk.StringVar()
-        self.category.set(self.category_options[-1])
+        self.category.set(self.income_category_options[-2])
         
         self.date = tk.StringVar()
         self.date.set(current_date())
@@ -116,7 +118,10 @@ class IncomeExpensesFrame(tk.Frame):
         
         # --------------------------------ΚΑΤΗΓΟΡΙΑ-----------------------
         tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=5, sticky="w")
-        ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+        if self.show_income.get():
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+        else:
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         
         # --------------------------------ΗΜΕΡΟΜΗΝΙΑ-----------------------
         tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=5, sticky="w")
@@ -224,7 +229,7 @@ class IncomeExpensesFrame(tk.Frame):
         }
         category_id = return_index(income_data['Category'], self.indb.showData('category_table'))
         frequency_id = return_index(income_data['Frequency'], self.indb.showData('frequency_table'))
-        print(f"category_id = {category_id}")
+
         self.incomes.append(income_data)  # Add to the list of entries
         
         self.indb.InsertIncome(
@@ -246,7 +251,7 @@ class IncomeExpensesFrame(tk.Frame):
         }
         category_id = return_index(expense_data['Category'], self.indb.showData('category_table'))
         frequency_id = return_index(expense_data['Frequency'], self.indb.showData('frequency_table'))
-        print(f"category_id = {category_id}")
+
         self.expenses.append(expense_data)  # Add to the list of entries
         
         self.indb.InsertExpense(
@@ -264,7 +269,7 @@ class IncomeExpensesFrame(tk.Frame):
             self.tree.delete(i)
 
         if self.show_income.get():
-            print(self.show_income.get())
+
             self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)
             income_entries = self.indb.printData("income")
             for entry in income_entries:
@@ -283,19 +288,21 @@ class IncomeExpensesFrame(tk.Frame):
         # This method is called when the income checkbox is clicked
         if self.show_income.get() == True:
             self.show_expenses.set(False)  # Uncheck expenses
+            self.category.set(self.income_category_options[-2])
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
 
     def toggle_income_off(self):
         # This method is called when the expenses checkbox is clicked
         if self.show_expenses.get() == True:
             self.show_income.set(False)  # Uncheck income
+            self.category.set(self.expense_category_options[-2])
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
 
     def toggle_edit_mode(self, edit, item_id=None, income_flag=None):
         self.edit_mode = edit
         self.current_item = item_id
-        
-        print(f"Edit mode: {edit}, Item ID: {item_id}, Income flag: {income_flag}")
 
         if income_flag:
             if edit:
@@ -321,7 +328,6 @@ class IncomeExpensesFrame(tk.Frame):
     def clear_input(self):
         self.description.set("")
         self.amount.set("")
-        self.category.set(self.category_options[-1])
         self.date.set(current_date())
         self.frequency.set(self.frequency_options[2])
 
