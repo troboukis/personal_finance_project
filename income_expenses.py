@@ -95,7 +95,8 @@ class IncomeExpensesFrame(tk.Frame):
 
         # --------------------------------ΚΟΥΜΠΙ SETTINGS---------------------------
         self.settings_button = ttk.Menubutton(self, text='⚙️Μενού επιλογών', direction='below')
-        self.settings_button.grid(row=0, column=0, sticky='e')
+        self.settings_button.grid(row=0, column=1, sticky='e')
+        # self.settings_button.place(x=300, y=30)
 
         # Create the dropdown menu
         self.settings_menu = Menu(self.settings_button, tearoff=0)
@@ -104,6 +105,9 @@ class IncomeExpensesFrame(tk.Frame):
         self.settings_menu.add_command(label="Εισαγωγή κατηγορίας", command=lambda: print("Option 1 selected"))
         self.settings_menu.add_command(label="Διαγραφή κατηγορίας", command=lambda: print("Option 2 selected"))
         self.settings_menu.add_command(label="Εξαγωγή σε excel", command=self.export_to_excel)
+
+        # --------------------------------ΕΠΙΣΤΡΟΦΗ ΑΡΧΙΚΗ ΣΕΛΙΔΑ----------------------
+        # sto main.py
 
         # --------------------------------ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗ---------------------------
         # Configure the delete button
