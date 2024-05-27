@@ -72,7 +72,6 @@ expenses_sql = '''
     '''
 
 commands = [type_sql, freq_sql, category_sql, income_sql, expenses_sql]
-new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
 
 class DatabaseConnection:
     def __init__(self, db_path):
@@ -362,12 +361,4 @@ class Income(DatabaseConnection):
 
         
     def DeleteCategory(self):
-        pass
-
-    def DeleteRecord(self):
-        pass
-
-class Expenses(DatabaseConnection):
-    def __init__(self, db_path):
-        super().__init__(db_path)
         pass

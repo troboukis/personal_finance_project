@@ -291,6 +291,7 @@ class IncomeExpensesFrame(tk.Frame):
             self.category.set(self.income_category_options[-2])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
+        self.clear_input()
 
     def toggle_income_off(self):
         # This method is called when the expenses checkbox is clicked
@@ -299,6 +300,7 @@ class IncomeExpensesFrame(tk.Frame):
             self.category.set(self.expense_category_options[-2])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
+        self.clear_input()
 
     def toggle_edit_mode(self, edit, item_id=None, income_flag=None):
         self.edit_mode = edit

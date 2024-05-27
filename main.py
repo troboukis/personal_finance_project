@@ -6,7 +6,7 @@ from income_expenses import IncomeExpensesFrame
 from app import *
 import random
 
-new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
+# new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
 def current_date(show_full_date = False):
     # Return the current date as a string
     if show_full_date:
