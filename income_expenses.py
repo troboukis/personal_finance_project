@@ -3,20 +3,23 @@ from tkinter import ttk
 from app import *
 from tkinter import messagebox
 import datetime
-from tkinter import PhotoImage
+from tkinter import PhotoImage, Menu
+from tkinter.filedialog import asksaveasfilename
+from openpyxl.workbook import Workbook
 
 
-def current_date(show_full_date = False):
+def current_date(show_full_date=False):
     # Return the current date as a string
     if show_full_date:
         return datetime.datetime.now().strftime("%b %d %Y, %H:%M")
     else:
         return datetime.datetime.now().strftime("%Y-%m-%d")
 
+
 class IncomeExpensesFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        
+
         self.last_item = None  # Attribute to store the ID of the last clicked item
 
         self.incomes = []
@@ -29,37 +32,35 @@ class IncomeExpensesFrame(tk.Frame):
         self.init_ui()
         self.update_table()
 
-
     def init_ui(self):
         self.indb = Income(new_db)
         self.db = DatabaseConnection(new_db)
         self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
-        self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2]==1]
-        self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2]==0]
-        
+        self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
+        self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 0]
+
         self.grid_columnconfigure(0, minsize=200)  # Smaller fixed minimum size for column 1
         self.grid_columnconfigure(1, minsize=100)  # Smaller fixed minimum size for column 2
         self.grid_columnconfigure(2, weight=1)
 
-
         # Configure the style for the Treeview
         treeStyle = ttk.Style(self)
         treeStyle.theme_use("default")
-        treeStyle.configure("Treeview", 
-                background="white", 
-                foreground="black", 
-                rowheight=25,  # Adjusted row height
-                fieldbackground="white")
-        
-        treeStyle.map("Treeview", 
-                background=[('selected', '#dadada')],
-                foreground=[('selected', 'white')])
-        
-        treeStyle.configure("Treeview.Heading", 
-                font=("Courier", 13, 'italic'), 
-                background="#D3D3D3", 
-                foreground="black")
-        
+        treeStyle.configure("Treeview",
+                            background="white",
+                            foreground="black",
+                            rowheight=25,  # Adjusted row height
+                            fieldbackground="white")
+
+        treeStyle.map("Treeview",
+                      background=[('selected', '#dadada')],
+                      foreground=[('selected', 'white')])
+
+        treeStyle.configure("Treeview.Heading",
+                            font=("Courier", 13, 'italic'),
+                            background="#D3D3D3",
+                            foreground="black")
+
         treeStyle.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])
 
         # Define StringVars
@@ -67,36 +68,44 @@ class IncomeExpensesFrame(tk.Frame):
         self.amount = tk.StringVar()
         self.category = tk.StringVar()
         self.category.set(self.income_category_options[-2])
-        
+
         self.date = tk.StringVar()
         self.date.set(current_date())
 
         self.frequency = tk.StringVar()
         self.frequency.set(self.frequency_options[2])
-        
 
         # UI Components
-        self.tree = ttk.Treeview(self, columns=('Date', 'Description', 'Amount', 'Frequency', 'Category'), show='headings')
+        self.tree = ttk.Treeview(self, columns=('Date', 'Description', 'Amount', 'Frequency', 'Category'),
+                                 show='headings')
 
         # --------------------------------ΕΣΟΔΑ - ΕΞΟΔΑ ΚΟΥΜΠΙΑ--------------------
         # tk.Label(self, text="Καταχώρηση εσόδων:", font=("Helvetica", 30)).grid(row=0, column=0, columnspan=3, padx=10, pady=10)
         self.income_cb = tk.Checkbutton(self, text='Έσοδα', font=("Helvetica", 16),
-                                   variable=self.show_income, onvalue=True, offvalue=False,
-                                   command= self.toggle_expenses_off)
+                                        variable=self.show_income, onvalue=True, offvalue=False,
+                                        command=self.toggle_expenses_off)
         self.income_cb.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
         self.income_cb.select()
 
         # Checkbutton for showing expenses
         self.expenses_cb = tk.Checkbutton(self, text='Έξοδα', font=("Helvetica", 16),
-                                     variable=self.show_expenses, onvalue=True, offvalue=False,
-                                     command=self.toggle_income_off)
+                                          variable=self.show_expenses, onvalue=True, offvalue=False,
+                                          command=self.toggle_income_off)
         self.expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
-        #--------------------------------ΚΟΥΜΠΙ SETTINGS---------------------------
-        self.settings_button = ttk.Button(self, text='⚙️', command=lambda: print("Settings Clicked"))
+        # --------------------------------ΚΟΥΜΠΙ SETTINGS---------------------------
+        self.settings_button = ttk.Menubutton(self, text='⚙️Μενού επιλογών', direction='below')
         self.settings_button.grid(row=0, column=0, sticky='e')
-        
-        #--------------------------------ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗ---------------------------
+
+        # Create the dropdown menu
+        self.settings_menu = Menu(self.settings_button, tearoff=0)
+        self.settings_button['menu'] = self.settings_menu
+
+        self.settings_menu.add_command(label="Εισαγωγή κατηγορίας", command=lambda: print("Option 1 selected"))
+        self.settings_menu.add_command(label="Διαγραφή κατηγορίας", command=lambda: print("Option 2 selected"))
+        self.settings_menu.add_command(label="Εξαγωγή σε excel", command=self.export_to_excel)
+
+        # --------------------------------ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗ---------------------------
         # Configure the delete button
         self.delete_button = ttk.Button(self, text='🗑', style='danger.TButton', command=self.delete_selection)
         self.delete_button.grid(row=7, column=1, pady=10, sticky="nsew")  # Adjust grid parameters as needed
@@ -107,37 +116,45 @@ class IncomeExpensesFrame(tk.Frame):
         style = ttk.Style(self)
         style.configure('danger.TButton', font=('Helvetica', 16), background='red', foreground='white')
 
-       
         # --------------------------------ΠΕΡΙΓΡΑΦΗ-----------------------
         tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        tk.Entry(self, textvariable=self.description, font=("Courier", 20)).grid(row=2, column=1, padx=10, pady=5, sticky="ew")
-        
+        tk.Entry(self, textvariable=self.description, font=("Courier", 20)).grid(row=2, column=1, padx=10, pady=5,
+                                                                                 sticky="ew")
+
         # --------------------------------ΠΟΣΟ----------------------------
         tk.Label(self, text="Ποσό:", font=("Helvetica", 20)).grid(row=3, column=0, padx=10, pady=5, sticky="w")
-        tk.Entry(self, textvariable=self.amount, font=("Courier", 20)).grid(row=3, column=1, padx=10, pady=5, sticky="ew")
-        
+        tk.Entry(self, textvariable=self.amount, font=("Courier", 20)).grid(row=3, column=1, padx=10, pady=5,
+                                                                            sticky="ew")
+
         # --------------------------------ΚΑΤΗΓΟΡΙΑ-----------------------
         tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=5, sticky="w")
         if self.show_income.get():
-            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
+                         values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         else:
-            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
-        
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
+                         values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+
         # --------------------------------ΗΜΕΡΟΜΗΝΙΑ-----------------------
-        tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=5, sticky="w")
+        tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=5,
+                                                                                     sticky="w")
         tk.Entry(self, textvariable=self.date, font=("Courier", 20)).grid(row=5, column=1, padx=10, pady=5, sticky="ew")
-        
+
         # --------------------------------ΣΥΧΝΟΤΗΤΑ------------------------
         tk.Label(self, text="Συχνότητα", font=("Helvetica", 20)).grid(row=6, column=0, padx=10, pady=5, sticky="w")
-        ttk.Combobox(self, textvariable=self.frequency, font=("Courier", 20), values=self.frequency_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
-        
+        ttk.Combobox(self, textvariable=self.frequency, font=("Courier", 20), values=self.frequency_options).grid(row=6,
+                                                                                                                  column=1,
+                                                                                                                  padx=10,
+                                                                                                                  pady=5,
+                                                                                                                  sticky="ew")
+
         # --------------------------------ΚΟΥΜΠΙ ΠΡΟΣΘΕΣΕ ΕΣΟΔΟ------------------------------
         style = ttk.Style(self)
         style.configure('success.TButton', font=('Helvetica', 16), background='green', foreground='white')
         self.action_button = ttk.Button(self, style='success.TButton')
         self.action_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="nsew")
-        
-        #---------------------------------------Treeview---------------------------------------
+
+        # ---------------------------------------Treeview---------------------------------------
         self.tree.heading('Date', text='Ημερομηνία')
         self.tree.heading('Description', text='Περιγραφή')
         self.tree.heading('Amount', text='Ποσό σε ευρώ')
@@ -199,7 +216,7 @@ class IncomeExpensesFrame(tk.Frame):
                 self.date.set(data[0])
                 self.category.set(data[4])
                 self.frequency.set(data[3])
-            
+
             # Store the currently selected item as the last item
             self.last_item = current_selected_item
 
@@ -208,7 +225,6 @@ class IncomeExpensesFrame(tk.Frame):
                 self.toggle_edit_mode(True, current_selected_item, income_flag=True)
             elif self.show_expenses.get() and current_selected_item:
                 self.toggle_edit_mode(True, current_selected_item, income_flag=False)
-
 
     def correct_amount(self):
         try:
@@ -231,12 +247,12 @@ class IncomeExpensesFrame(tk.Frame):
         frequency_id = return_index(income_data['Frequency'], self.indb.showData('frequency_table'))
 
         self.incomes.append(income_data)  # Add to the list of entries
-        
+
         self.indb.InsertIncome(
-            income_data['Description'], 
-            income_data['Amount'], 
-            category_id, 
-            income_data['Date'], 
+            income_data['Description'],
+            income_data['Amount'],
+            category_id,
+            income_data['Date'],
             frequency_id)
         self.update_table()  # Update the table view
         self.clear_input()
@@ -253,12 +269,12 @@ class IncomeExpensesFrame(tk.Frame):
         frequency_id = return_index(expense_data['Frequency'], self.indb.showData('frequency_table'))
 
         self.expenses.append(expense_data)  # Add to the list of entries
-        
+
         self.indb.InsertExpense(
-            expense_data['Description'], 
-            expense_data['Amount'], 
-            category_id, 
-            expense_data['Date'], 
+            expense_data['Description'],
+            expense_data['Amount'],
+            category_id,
+            expense_data['Date'],
             frequency_id)
         self.update_table()  # Update the table view
         self.clear_input()
@@ -269,7 +285,6 @@ class IncomeExpensesFrame(tk.Frame):
             self.tree.delete(i)
 
         if self.show_income.get():
-
             self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)
             income_entries = self.indb.printData("income")
             for entry in income_entries:
@@ -283,24 +298,23 @@ class IncomeExpensesFrame(tk.Frame):
         else:
             self.action_button.config(text="Καμία ενέργεια", command=lambda: None)
 
-
     def toggle_expenses_off(self):
         # This method is called when the income checkbox is clicked
         if self.show_income.get() == True:
             self.show_expenses.set(False)  # Uncheck expenses
             self.category.set(self.income_category_options[-2])
-            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
+                         values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
-        self.clear_input()
 
     def toggle_income_off(self):
         # This method is called when the expenses checkbox is clicked
         if self.show_expenses.get() == True:
             self.show_income.set(False)  # Uncheck income
             self.category.set(self.expense_category_options[-2])
-            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20), values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
+                         values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
-        self.clear_input()
 
     def toggle_edit_mode(self, edit, item_id=None, income_flag=None):
         self.edit_mode = edit
@@ -326,7 +340,6 @@ class IncomeExpensesFrame(tk.Frame):
                 # self.delete_button.grid_remove()
                 self.clear_input()
 
-
     def clear_input(self):
         self.description.set("")
         self.amount.set("")
@@ -337,23 +350,22 @@ class IncomeExpensesFrame(tk.Frame):
         self.delete_button.grid_remove()
         self.action_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="nsew")
         self.update_table()
-        
-    def update_income(self):
 
+    def update_income(self):
         original_description = self.original_data['Description']
         original_amount = self.original_data['Amount']
         original_date = self.original_data['Date']
-        
+
         new_description = self.description.get()
         new_amount = self.correct_amount()
         new_date = self.date.get()
-        
+
         income_id = self.indb.GetID(original_description, original_date, original_amount)
-        
+
         self.indb.UpdateIncome(new_description, new_date, new_amount, income_id[0])
         # Reset UI components
         self.clear_input()  # This clears inputs and deselects the Treeview
-        
+
     def delete_selection(self):
         if self.show_income.get():
             original_description = self.original_data['Description']
@@ -363,7 +375,7 @@ class IncomeExpensesFrame(tk.Frame):
             income_id = self.indb.GetID(original_description, original_date, original_amount)
             self.indb.DeleteIncome(income_id[0])
             self.clear_input()
-        elif self.show_income.get()==False:
+        elif self.show_income.get() == False:
             original_description = self.original_data['Description']
             original_amount = self.original_data['Amount']
             original_date = self.original_data['Date']
@@ -371,19 +383,66 @@ class IncomeExpensesFrame(tk.Frame):
             expenses_id = self.indb.GetExpensesID(original_description, original_date, original_amount)
             self.indb.DeleteExpense(expenses_id[0])
             self.clear_input()
-        
 
     def update_expense(self):
         original_description = self.original_data['Description']
         original_amount = self.original_data['Amount']
         original_date = self.original_data['Date']
-        
+
         new_description = self.description.get()
         new_amount = self.correct_amount()
         new_date = self.date.get()
-        
+
         expenses_id = self.indb.GetExpensesID(original_description, original_date, original_amount)
         self.indb.UpdateExpenses(new_description, new_date, new_amount, expenses_id[0])
 
         # Reset UI components
         self.clear_input()  # This clears inputs and deselects the Treeview
+
+    def export_to_excel(self):
+
+        # Έλεγχος αν έχει επιλεγεί κάτι για εξαγωγή
+        if not self.show_income.get() and not self.show_expenses.get():
+            messagebox.showwarning("Προειδοποίηση", "Παρακαλώ επιλέξτε έσοδα ή έξοδα για εξαγωγή.")
+            return
+
+            # Συνδυάζουμε τα έσοδα και τα έξοδα σε ένα DataFrame
+        combined_data = []
+        income_entries = self.indb.printData("income")
+        for entry in income_entries:
+            combined_data.append({
+                'Date': entry[1],
+                'Description': entry[2],
+                'Amount': entry[3],
+                'Frequency': entry[7],
+                'Category': entry[9],
+                'Type': 'Income'
+            })
+
+        expense_entries = self.indb.printData("expenses")
+        for entry in expense_entries:
+            combined_data.append({
+                'Date': entry[1],
+                'Description': entry[2],
+                'Amount': entry[3],
+                'Frequency': entry[7],
+                'Category': entry[9],
+                'Type': 'Expense'
+            })
+
+            # Δημιουργία DataFrame από τα δεδομένα
+        df = pd.DataFrame(combined_data)
+
+        # Ζητάμε από τον χρήστη να επιλέξει τοποθεσία και όνομα αρχείου για την αποθήκευση
+        file_path = asksaveasfilename(defaultextension=".xlsx",
+                                      filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")])
+
+        if file_path:
+            # Αποθήκευση του DataFrame σε αρχείο Excel
+            df.to_excel(file_path, index=False)
+
+            # Εμφάνιση μηνύματος επιτυχίας
+            messagebox.showinfo("Επιτυχία", f"Τα δεδομένα εξήχθησαν επιτυχώς στο αρχείο {file_path}")
+        else:
+            # Εμφάνιση μηνύματος ακύρωσης
+            messagebox.showwarning("Ακύρωση", "Η εξαγωγή ακυρώθηκε")

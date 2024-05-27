@@ -6,7 +6,10 @@ from income_expenses import IncomeExpensesFrame
 from app import *
 import random
 
+
+
 # new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
+
 def current_date(show_full_date = False):
     # Return the current date as a string
     if show_full_date:
@@ -59,6 +62,7 @@ def main():
 
     bttk.Button(home_frame, text='Έσοδα - Έξοδα', style='primary.TButton', command=lambda: show_frame(income_expenses_frame))\
         .grid(row=4, column=0, padx=20, pady=40, sticky='ew')
+
     bttk.Button(home_frame, text='Ανάλυση', style='primary.TButton', command=lambda: show_frame(analysis_frame))\
         .grid(row=4, column=1, padx=20, pady=20, sticky='ew')
 
@@ -67,8 +71,8 @@ def main():
 
     # Analysis Frame Widgets
     tk.Label(analysis_frame, text="Ανάλυση", font=("Helvetica", 35)).grid(row=1, column=0, sticky='ew', padx=10, pady=200)
-    bttk.Button(analysis_frame, text="Back to Home", style='primary.TButton', command=lambda: show_frame(home_frame)).grid(row=10, column=0, sticky='ew')
-    
+    bttk.Button(income_expenses_frame, text="Back to Home", style='primary-outline.TButton', command=lambda: show_frame(home_frame)).grid(row=0, column=1, sticky='n', pady=10)
+    bttk.Button(analysis_frame, text="Back to Home", style='primary-outline.TButton', command=lambda: show_frame(home_frame)).grid(row=10, column=0, sticky='ew')
 
     # Start on the Home Frame
     show_frame(home_frame)
