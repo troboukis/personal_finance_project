@@ -31,6 +31,8 @@ class IncomeExpensesFrame(tk.Frame):
         self.show_income = tk.BooleanVar(value=False)
         self.show_expenses = tk.BooleanVar(value=False)
 
+        self.canvas = None
+
         self.init_ui()
         self.update_table()
 
@@ -168,6 +170,7 @@ class IncomeExpensesFrame(tk.Frame):
         style.configure('success.TButton', font=('Helvetica', 16), background='green', foreground='white')
         self.action_button = ttk.Button(self, style='success.TButton')
         self.action_button.grid(row=9, column=0, columnspan=2, pady=10, sticky="nsew")
+        
 
         # ---------------------------------------Treeview---------------------------------------
         self.tree.heading('Date', text='Ημερομηνία')
@@ -204,8 +207,13 @@ class IncomeExpensesFrame(tk.Frame):
 
         self.edit_mode = False
         self.current_item = None
+    
+    #-------------------------------------ΓΡΑΦΗΜΑ---------------------------------
 
     def embed_donut_chart(self, data):
+        if self.canvas:
+            self.canvas.get_tk_widget().destroy()
+            self.canvas = None
         figure = plot_donut_chart(data)
         canvas = FigureCanvasTkAgg(figure, self)
         canvas.draw()
@@ -372,6 +380,7 @@ class IncomeExpensesFrame(tk.Frame):
         self.delete_button.grid_remove()
         self.action_button.grid(row=9, column=0, columnspan=2, pady=10, sticky="nsew")
         self.update_table()
+        self.embed_donut_chart(self.db.get_all_data())
 
     def update_income(self):
         original_description = self.original_data['Description']
