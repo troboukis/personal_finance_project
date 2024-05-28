@@ -6,6 +6,8 @@ import datetime
 from tkinter import PhotoImage, Menu
 from tkinter.filedialog import asksaveasfilename
 from openpyxl.workbook import Workbook
+from charts import *
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 def current_date(show_full_date=False):
@@ -41,7 +43,9 @@ class IncomeExpensesFrame(tk.Frame):
 
         self.grid_columnconfigure(0, minsize=200)  # Smaller fixed minimum size for column 1
         self.grid_columnconfigure(1, minsize=100)  # Smaller fixed minimum size for column 2
-        self.grid_columnconfigure(2, weight=1)
+        self.grid_columnconfigure(2, minsize=300)
+
+        print(self.db.get_all_data())
 
         # Configure the style for the Treeview
         treeStyle = ttk.Style(self)
@@ -112,7 +116,7 @@ class IncomeExpensesFrame(tk.Frame):
         # --------------------------------ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗ---------------------------
         # Configure the delete button
         self.delete_button = ttk.Button(self, text='🗑', style='danger.TButton', command=self.delete_selection)
-        self.delete_button.grid(row=7, column=1, pady=10, sticky="nsew")  # Adjust grid parameters as needed
+        self.delete_button.grid(row=9, column=1, pady=10, sticky="nsew")  # Adjust grid parameters as needed
 
         self.delete_button.grid_remove()  # Start with the button hidden
 
@@ -121,42 +125,49 @@ class IncomeExpensesFrame(tk.Frame):
         style.configure('danger.TButton', font=('Helvetica', 16), background='red', foreground='white')
 
         # --------------------------------ΠΕΡΙΓΡΑΦΗ-----------------------
-        tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        tk.Entry(self, textvariable=self.description, font=("Courier", 20)).grid(row=2, column=1, padx=10, pady=5,
+        tk.Label(self, text="Περιγραφή:", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=5, sticky="w")
+        tk.Entry(self, textvariable=self.description, font=("Courier", 20)).grid(row=4, column=1, padx=10, pady=5,
                                                                                  sticky="ew")
 
         # --------------------------------ΠΟΣΟ----------------------------
-        tk.Label(self, text="Ποσό:", font=("Helvetica", 20)).grid(row=3, column=0, padx=10, pady=5, sticky="w")
-        tk.Entry(self, textvariable=self.amount, font=("Courier", 20)).grid(row=3, column=1, padx=10, pady=5,
+        tk.Label(self, text="Ποσό:", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=5, sticky="w")
+        tk.Entry(self, textvariable=self.amount, font=("Courier", 20)).grid(row=5, column=1, padx=10, pady=5,
                                                                             sticky="ew")
 
         # --------------------------------ΚΑΤΗΓΟΡΙΑ-----------------------
-        tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=4, column=0, padx=10, pady=5, sticky="w")
+        tk.Label(self, text="Κατηγορία:", font=("Helvetica", 20)).grid(row=6, column=0, padx=10, pady=5, sticky="w")
         if self.show_income.get():
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
-                         values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+                         values=self.income_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         else:
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
-                         values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+                         values=self.expense_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
 
         # --------------------------------ΗΜΕΡΟΜΗΝΙΑ-----------------------
-        tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=5, column=0, padx=10, pady=5,
+        tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=7, column=0, padx=10, pady=5,
                                                                                      sticky="w")
-        tk.Entry(self, textvariable=self.date, font=("Courier", 20)).grid(row=5, column=1, padx=10, pady=5, sticky="ew")
+        tk.Entry(self, textvariable=self.date, font=("Courier", 20)).grid(row=7, column=1, padx=10, pady=5, sticky="ew")
 
         # --------------------------------ΣΥΧΝΟΤΗΤΑ------------------------
-        tk.Label(self, text="Συχνότητα", font=("Helvetica", 20)).grid(row=6, column=0, padx=10, pady=5, sticky="w")
-        ttk.Combobox(self, textvariable=self.frequency, font=("Courier", 20), values=self.frequency_options).grid(row=6,
+        tk.Label(self, text="Συχνότητα", font=("Helvetica", 20)).grid(row=8, column=0, padx=10, pady=5, sticky="w")
+        ttk.Combobox(self, textvariable=self.frequency, font=("Courier", 20), values=self.frequency_options).grid(row=8,
                                                                                                                   column=1,
                                                                                                                   padx=10,
                                                                                                                   pady=5,
                                                                                                                   sticky="ew")
+        
+        # -----------ΓΡΑΦΗΜΑ
+        self.embed_donut_chart(self.db.get_all_data())
+
+
+        # self.plot_donut_chart()
+        # plot_donut_chart(self.db.get_all_data())
 
         # --------------------------------ΚΟΥΜΠΙ ΠΡΟΣΘΕΣΕ ΕΣΟΔΟ------------------------------
         style = ttk.Style(self)
         style.configure('success.TButton', font=('Helvetica', 16), background='green', foreground='white')
         self.action_button = ttk.Button(self, style='success.TButton')
-        self.action_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="nsew")
+        self.action_button.grid(row=9, column=0, columnspan=2, pady=10, sticky="nsew")
 
         # ---------------------------------------Treeview---------------------------------------
         self.tree.heading('Date', text='Ημερομηνία')
@@ -172,18 +183,18 @@ class IncomeExpensesFrame(tk.Frame):
         self.tree.column('Date', anchor='center', width=140)
         self.tree.column('Frequency', anchor='center', width=100)
 
-        self.tree.grid(row=1, column=2, rowspan=6, padx=10, pady=10, sticky='nsew')
+        self.tree.grid(row=1, column=2, rowspan=9, padx=10, pady=10, sticky='nsew')
 
         # Scrollbars for Treeview
         vscroll = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
         hscroll = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
         self.tree.configure(yscrollcommand=vscroll.set, xscrollcommand=hscroll.set)
-        vscroll.grid(row=1, column=3, rowspan=6, sticky='ns')
-        hscroll.grid(row=7, column=2, sticky='ew')
+        vscroll.grid(row=1, column=3, rowspan=9, sticky='ns')
+        hscroll.grid(row=9, column=2, sticky='ew')
 
         # Grid configuration for resizing
-        self.grid_columnconfigure(1, weight=0)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
 
         # ON SELECT
 
@@ -193,6 +204,13 @@ class IncomeExpensesFrame(tk.Frame):
 
         self.edit_mode = False
         self.current_item = None
+
+    def embed_donut_chart(self, data):
+        figure = plot_donut_chart(data)
+        canvas = FigureCanvasTkAgg(figure, self)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=2, column=0, rowspan=2, columnspan=2, padx=10, pady=10)
+
 
     def on_select(self, event):
         current_selected_item = self.tree.selection()
@@ -308,7 +326,7 @@ class IncomeExpensesFrame(tk.Frame):
             self.show_expenses.set(False)  # Uncheck expenses
             self.category.set(self.income_category_options[-2])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
-                         values=self.income_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+                         values=self.income_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
 
     def toggle_income_off(self):
@@ -317,7 +335,7 @@ class IncomeExpensesFrame(tk.Frame):
             self.show_income.set(False)  # Uncheck income
             self.category.set(self.expense_category_options[-2])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
-                         values=self.expense_category_options).grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+                         values=self.expense_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
 
     def toggle_edit_mode(self, edit, item_id=None, income_flag=None):
@@ -352,7 +370,7 @@ class IncomeExpensesFrame(tk.Frame):
 
         self.tree.selection_remove(self.tree.selection())
         self.delete_button.grid_remove()
-        self.action_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="nsew")
+        self.action_button.grid(row=9, column=0, columnspan=2, pady=10, sticky="nsew")
         self.update_table()
 
     def update_income(self):
@@ -450,3 +468,4 @@ class IncomeExpensesFrame(tk.Frame):
         else:
             # Εμφάνιση μηνύματος ακύρωσης
             messagebox.showwarning("Ακύρωση", "Η εξαγωγή ακυρώθηκε")
+    

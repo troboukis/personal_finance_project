@@ -109,9 +109,24 @@ class DatabaseConnection:
         list_tables = [table[0] for table in self.tables]
         return list_tables
     
+    def get_all_data(self):
+        ''' Επιστρέφει όλα τα έξοδα και τα έσοδα'''
+        data1 = pd.DataFrame(self.printData("income"))
+        data2 = pd.DataFrame(self.printData("expenses"))
+        df = pd.concat([data1, data2])
+        df=df[[1, 10, 2, 3, 9, 7]].copy()
+        df.columns=['Ημερομηνία', 'Τύπος', 'Περιγραφή', 'Ποσό', 'Κατηγορία', 'Συχνότητα']
+        df['Τύπος'].replace(0, 'Έξοδο', inplace=True)
+        df['Τύπος'].replace(1, 'Έσοδο', inplace=True)
+
+        df['Ημερομηνία'] = pd.to_datetime(df['Ημερομηνία'])
+        df = df.sort_values(by="Ημερομηνία").reset_index(drop=True).copy()
+        df.to_csv("all_data.csv", index=False)
+        return df
+    
     def printData(self, table):
         '''
-        Επιστρέφει τα δεδομένα της βάσης δεδομένων. Εάν columns=True, τότε επιστρέφει ένα πλαίσιο δεδομένων. Διαφορετικά επιστρέφει ένα λεξικό.
+        Επιστρέφει τα δεδομένα της βάσης δεδομένων. 
         '''
         self.__enter__()
         parameter = f'''
@@ -122,11 +137,12 @@ class DatabaseConnection:
         '''
         self.cursor.execute(parameter)
         data = self.cursor.fetchall()
+        self.__exit__(None, None, None)
         return data
 
     def showData(self, table, dataframe=False):
         '''
-        Επιστρέφει τα δεδομένα της βάσης δεδομένων. Εάν columns=True, τότε επιστρέφει ένα πλαίσιο δεδομένων. Διαφορετικά επιστρέφει ένα λεξικό.
+        Επιστρέφει τα δεδομένα της βάσης δεδομένων.
         '''
         self.__enter__()
         parameter = f"SELECT * FROM {table}" # SELECT * FROM {table} JOIN frequency_table ON freq_id = frequency
