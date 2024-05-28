@@ -11,15 +11,6 @@ from charts import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from CalendarFinance import *
 
-
-def current_date(show_full_date=False):
-    # Return the current date as a string
-    if show_full_date:
-        return datetime.datetime.now().strftime("%b %d %Y, %H:%M")
-    else:
-        return datetime.datetime.now().strftime("%Y-%m-%d")
-
-
 class IncomeExpensesFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -45,6 +36,7 @@ class IncomeExpensesFrame(tk.Frame):
     def init_ui(self):
         self.indb = Income(new_db)
         self.db = DatabaseConnection(new_db)
+        
 
         self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
         self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
@@ -393,14 +385,18 @@ class IncomeExpensesFrame(tk.Frame):
         original_description = self.original_data['Description']
         original_amount = self.original_data['Amount']
         original_date = self.original_data['Date']
+        original_frequency = self.original_data['Frequency']
+        
 
         new_description = self.description.get()
         new_amount = self.correct_amount()
         new_date = self.date.get()
+        new_frequency = self.frequency.get()
+        new_category = self.category.get()
 
         income_id = self.indb.GetID(original_description, original_date, original_amount)
 
-        self.indb.UpdateIncome(new_description, new_date, new_amount, income_id[0])
+        self.indb.UpdateIncome(new_description, new_date, new_amount, unstuck_frequency(new_frequency),self.indb.GetCategoryIndex(new_category), income_id[0])
         # Reset UI components
         self.clear_input()  # This clears inputs and deselects the Treeview
 
@@ -426,13 +422,17 @@ class IncomeExpensesFrame(tk.Frame):
         original_description = self.original_data['Description']
         original_amount = self.original_data['Amount']
         original_date = self.original_data['Date']
+        # original_frequency = self.original_data['Frequency']
 
         new_description = self.description.get()
         new_amount = self.correct_amount()
         new_date = self.date.get()
-
+        new_frequency = self.frequency.get()
+        new_category = self.category.get()
+        
+        
         expenses_id = self.indb.GetExpensesID(original_description, original_date, original_amount)
-        self.indb.UpdateExpenses(new_description, new_date, new_amount, expenses_id[0])
+        self.indb.UpdateExpenses(new_description, new_date, new_amount, unstuck_frequency(new_frequency), self.indb.GetCategoryIndex(new_category), expenses_id[0])
 
         # Reset UI components
         self.clear_input()  # This clears inputs and deselects the Treeview

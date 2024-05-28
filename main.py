@@ -1,12 +1,11 @@
 import tkinter as tk
+from tkinter import ttk
 import ttkbootstrap as bttk
 from ttkbootstrap import Style
 import datetime
 from income_expenses import IncomeExpensesFrame 
 from app import *
 import random
-
-
 
 
 def current_date(show_full_date = False):
@@ -30,6 +29,7 @@ def main():
 
     style = Style()
     style.configure('W.TButton', font=('Roboto', 20, 'bold'), padding=20)
+    
 
     # Creating frames for each section
     home_frame = tk.Frame(root)

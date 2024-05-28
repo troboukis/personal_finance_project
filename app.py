@@ -19,6 +19,14 @@ def return_index(string, data):
             return item[0]
     return 12
         
+def unstuck_frequency(text):
+    if text=='Έκτακτο':
+        return 2
+    elif text == "Ετήσιο":
+        return 1
+    elif text =="Μηνιαίο":
+        return 0
+    
 type_sql = '''
     CREATE TABLE IF NOT EXISTS type_table (
         type_id INTEGER NOT NULL UNIQUE, 
@@ -118,8 +126,10 @@ class DatabaseConnection:
         df.columns=['Ημερομηνία', 'Τύπος', 'Περιγραφή', 'Ποσό', 'Κατηγορία', 'Συχνότητα']
         df['Τύπος'] = df['Τύπος'].replace(0, 'Έξοδο').replace(1, 'Έσοδο')
         
-
+        print(df["Ημερομηνία"])
         df['Ημερομηνία'] = pd.to_datetime(df['Ημερομηνία'])
+        print("--------------------")
+        print(df["Ημερομηνία"])
         df = df.sort_values(by="Ημερομηνία").reset_index(drop=True).copy()
         df.to_csv("all_data.csv", index=False)
         return df
@@ -156,6 +166,7 @@ class DatabaseConnection:
             # Use pandas DataFrame for prettifying and easy manipulation of data and column names
             df = pd.DataFrame(data, columns=columns)
             self.__exit__(None, None, None)
+            print(df)
             return df
 
 
@@ -182,7 +193,15 @@ class Income(DatabaseConnection):
         self.category_name = None
         self.frequency=None
         self.category=None
+        
 
+    def GetCategoryIndex(self, category_term):
+        existing_categories = [cat for cat in self.showData('category_table', dataframe=False)]
+        for category in existing_categories:
+            if category_term == category[1]:
+                return category[0]
+
+        
     def InsertCategory(self, category_name):
         """
         Εισάγει μια νέα κατηγορία στον πίνακα 'category_table'. 
@@ -305,27 +324,27 @@ class Income(DatabaseConnection):
             self.__exit__(None, None, None)
             return record_id
         
-    def UpdateIncome(self, n_description, n_date, n_amount, id):
+    def UpdateIncome(self, n_description, n_date, n_amount, n_frequency, n_category, id):
         self.__enter__()
 
         self.cursor.execute("""
             UPDATE income
-            SET name = ?, date = ?, amount = ?
+            SET name = ?, date = ?, amount = ?, frequency = ?, category = ?
             WHERE income_id = ?;
-        """, (n_description, n_date, n_amount, id))
+        """, (n_description, n_date, n_amount, n_frequency, n_category, id))
         
         self.conn.commit()
         print("Income record updated successfully, ID:", id)
         self.__exit__(None, None, None)
 
-    def UpdateExpenses(self, n_description, n_date, n_amount, id):
+    def UpdateExpenses(self, n_description, n_date, n_amount, n_frequency, n_category, id):
         self.__enter__()
 
         self.cursor.execute("""
             UPDATE expenses
-            SET name = ?, date = ?, amount = ?
+            SET name = ?, date = ?, amount = ?, frequency = ?, category = ?
             WHERE expenses_id = ?;
-        """, (n_description, n_date, n_amount, id))
+        """, (n_description, n_date, n_amount, n_frequency, n_category, id))
         
         self.conn.commit()
         print("Expenses record updated successfully, ID:", id)
