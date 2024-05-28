@@ -193,7 +193,7 @@ class IncomeExpensesFrame(tk.Frame):
         hscroll = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
         self.tree.configure(yscrollcommand=vscroll.set, xscrollcommand=hscroll.set)
         vscroll.grid(row=1, column=3, rowspan=9, sticky='ns')
-        hscroll.grid(row=9, column=2, sticky='ew')
+        hscroll.grid(row=10, column=2, sticky='ew')
 
         # Grid configuration for resizing
         self.grid_columnconfigure(1, weight=1)
