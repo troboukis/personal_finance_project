@@ -9,7 +9,7 @@ from tkinter.filedialog import asksaveasfilename
 from openpyxl.workbook import Workbook
 from charts import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from tkcalendar import DateEntry
+from CalendarFinance import *
 
 
 def current_date(show_full_date=False):
@@ -24,6 +24,7 @@ class IncomeExpensesFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
+
         self.last_item = None  # Attribute to store the ID of the last clicked item
 
         self.incomes = []
@@ -37,10 +38,14 @@ class IncomeExpensesFrame(tk.Frame):
 
         self.init_ui()
         self.update_table()
+    
+    def open_calendar(self):
+        CalendarPopup(self, self.date)
 
     def init_ui(self):
         self.indb = Income(new_db)
         self.db = DatabaseConnection(new_db)
+
         self.frequency_options = [i[1] for i in self.indb.showData('frequency_table')]
         self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
         self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 0]
@@ -48,10 +53,6 @@ class IncomeExpensesFrame(tk.Frame):
         self.grid_columnconfigure(0, minsize=100)  # Smaller fixed minimum size for column 1
         self.grid_columnconfigure(1, minsize=200)  # Smaller fixed minimum size for column 2
         self.grid_columnconfigure(2, minsize=300)
-
-        #---------------------calendar---------------------
-        # DateEntry(self, style='success.TCalendar')\
-        #                 .grid(row=0, column=2, columnspan=4, sticky='we')
 
         # Configure the style for the Treeview
         treeStyle = ttk.Style(self)
@@ -152,7 +153,9 @@ class IncomeExpensesFrame(tk.Frame):
         # --------------------------------ΗΜΕΡΟΜΗΝΙΑ-----------------------
         tk.Label(self, text="Ημερομηνία (dd-mm-yyyy):", font=("Helvetica", 20)).grid(row=7, column=0, padx=10, pady=5,
                                                                                      sticky="w")
-        tk.Entry(self, textvariable=self.date, font=("Courier", 20)).grid(row=7, column=1, padx=10, pady=5, sticky="ew")
+        # tk.Entry(self, textvariable=self.date, font=("Courier", 20)).grid(row=7, column=1, padx=10, pady=5, sticky="ew")
+        self.date_button = ttk.Button(self, textvariable=self.date, command=self.open_calendar)
+        self.date_button.grid(row=7, column=1, padx=10, pady=5, sticky="ew")
 
         # --------------------------------ΣΥΧΝΟΤΗΤΑ------------------------
         tk.Label(self, text="Συχνότητα", font=("Helvetica", 20)).grid(row=8, column=0, padx=10, pady=5, sticky="w")
