@@ -1,10 +1,12 @@
 appnope==0.1.4
 asttokens==2.4.1
+Babel==2.14.0
 comm==0.2.2
 contourpy==1.2.0
 cycler==0.12.1
 debugpy==1.8.1
 decorator==5.1.1
+et-xmlfile==1.1.0
 executing==2.0.1
 fonttools==4.50.0
 ipykernel==6.29.3
@@ -17,6 +19,7 @@ matplotlib==3.8.3
 matplotlib-inline==0.1.6
 nest-asyncio==1.6.0
 numpy==1.26.4
+openpyxl==3.1.2
 packaging==24.0
 pandas==2.2.1
 parso==0.8.3
@@ -34,7 +37,9 @@ pytz==2024.1
 pyzmq==25.1.2
 six==1.16.0
 stack-data==0.6.3
+tkcalendar==1.6.1
 tornado==6.4
 traitlets==5.14.2
+ttkbootstrap==1.10.1
 tzdata==2024.1
 wcwidth==0.2.13
