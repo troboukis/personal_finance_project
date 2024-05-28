@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import ttkbootstrap as bttk
 from app import *
 from tkinter import messagebox
 import datetime
@@ -8,6 +9,7 @@ from tkinter.filedialog import asksaveasfilename
 from openpyxl.workbook import Workbook
 from charts import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkcalendar import DateEntry
 
 
 def current_date(show_full_date=False):
@@ -43,11 +45,13 @@ class IncomeExpensesFrame(tk.Frame):
         self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
         self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 0]
 
-        self.grid_columnconfigure(0, minsize=200)  # Smaller fixed minimum size for column 1
-        self.grid_columnconfigure(1, minsize=100)  # Smaller fixed minimum size for column 2
+        self.grid_columnconfigure(0, minsize=100)  # Smaller fixed minimum size for column 1
+        self.grid_columnconfigure(1, minsize=200)  # Smaller fixed minimum size for column 2
         self.grid_columnconfigure(2, minsize=300)
 
-        print(self.db.get_all_data())
+        #---------------------calendar---------------------
+        # DateEntry(self, style='success.TCalendar')\
+        #                 .grid(row=0, column=2, columnspan=4, sticky='we')
 
         # Configure the style for the Treeview
         treeStyle = ttk.Style(self)
@@ -158,7 +162,7 @@ class IncomeExpensesFrame(tk.Frame):
                                                                                                                   pady=5,
                                                                                                                   sticky="ew")
         
-        # -----------ΓΡΑΦΗΜΑ
+        # -----------ΓΡΑΦΗΜΑ------
         self.embed_donut_chart(self.db.get_all_data())
 
 

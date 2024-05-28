@@ -116,8 +116,8 @@ class DatabaseConnection:
         df = pd.concat([data1, data2])
         df=df[[1, 10, 2, 3, 9, 7]].copy()
         df.columns=['Ημερομηνία', 'Τύπος', 'Περιγραφή', 'Ποσό', 'Κατηγορία', 'Συχνότητα']
-        df['Τύπος'].replace(0, 'Έξοδο', inplace=True)
-        df['Τύπος'].replace(1, 'Έσοδο', inplace=True)
+        df['Τύπος'] = df['Τύπος'].replace(0, 'Έξοδο').replace(1, 'Έσοδο')
+        
 
         df['Ημερομηνία'] = pd.to_datetime(df['Ημερομηνία'])
         df = df.sort_values(by="Ημερομηνία").reset_index(drop=True).copy()
