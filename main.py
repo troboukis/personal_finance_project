@@ -6,6 +6,7 @@ import datetime
 from income_expenses import IncomeExpensesFrame 
 from app import *
 import random
+from analysis import FinanceAnalysis
 
 
 def current_date(show_full_date = False):
@@ -34,7 +35,7 @@ def main():
     # Creating frames for each section
     home_frame = tk.Frame(root)
     income_expenses_frame = IncomeExpensesFrame(root)
-    analysis_frame = tk.Frame(root)
+    analysis_frame = FinanceAnalysis(root)
 
     frames = [home_frame, income_expenses_frame, analysis_frame]
     for frame in frames:

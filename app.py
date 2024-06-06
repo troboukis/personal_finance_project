@@ -381,19 +381,59 @@ class Income(DatabaseConnection):
             """, (expense_id,))
 
             self.conn.commit()  # Commit the transaction
-            print(f"Expense record deleted successfully, ID: {expense_id}")
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"Σφάλμα: {e}")
             self.conn.rollback()  # Rollback the transaction in case of error
 
         finally:
             self.__exit__(None, None, None)  # Ensure resources are cleaned up properly
 
+    
+    def AddCategory(self, category_name, category_type):
+        """
+        Προσθέτει μια νέα κατηγορία στον πίνακα 'category_table'.
+ 
+        :param category_name: Το όνομα της νέας κατηγορίας.
+        :param category_type: Ο τύπος της κατηγορίας (π.χ. έξοδα ή έσοδα).
+        """
+        self.__enter__()
+        try:
+            # Ελέγχος αν η κατηγορία υπάρχει ήδη
+            check_query = "SELECT EXISTS(SELECT 1 FROM category_table WHERE name = ?)"
+            self.cursor.execute(check_query, (category_name,))
 
-    def UpdateCategory(self):
-        pass
-
-        
-    def DeleteCategory(self):
-        pass
+            # Προσθήκη της νέας κατηγορίας
+            insert_query = "INSERT INTO category_table (name, type) VALUES (?, ?)"
+            self.cursor.execute(insert_query, (category_name, category_type))
+            self.conn.commit()
+            return f"Η κατηγορία '{category_name}' προστέθηκε επιτυχώς."
+        except sqlite3.IntegrityError as e:
+            return f"Παρουσιάστηκε σφάλμα στη Βάση Δεδομένων: {e}"
+        except Exception as e:
+            return f"Σφάλμα: {e}"
+        finally:
+            self.__exit__(None, None, None)
+           
+       
+    def DeleteCategory(self, category_name, force=False):
+        """
+        Διαγράφει μια κατηγορία από τον πίνακα 'category_table'.
+ 
+        :param category_name: Το όνομα της κατηγορίας που θα διαγραφεί.
+        :param force: Εάν True, διαγράφει την κατηγορία ακόμα και αν χρησιμοποιείται σε συναλλαγές. Προεπιλογή είναι False.
+        """
+        self.__enter__()
+        try:
+            # Διαγραφή της κατηγορίας
+            delete_query = "DELETE FROM category_table WHERE name = ?"
+            self.cursor.execute(delete_query, (category_name,))
+            
+            self.conn.commit()
+            return f"Η κατηγορία '{category_name}' διαγράφηκε επιτυχώς."
+        except sqlite3.IntegrityError as e:
+            return f"Παρουσιάστηκε σφάλμα: {e}"
+        except Exception as e:
+            return f"Άγνωστο σφάλμα: {e}"
+        finally:
+            self.__exit__(None, None, None)

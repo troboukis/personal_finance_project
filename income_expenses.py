@@ -97,7 +97,7 @@ class IncomeExpensesFrame(tk.Frame):
         self.expenses_cb.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
         # --------------------------------ΚΟΥΜΠΙ SETTINGS---------------------------
-        self.settings_button = ttk.Menubutton(self, text='⚙️Μενού επιλογών', direction='below')
+        self.settings_button = ttk.Menubutton(self, text='⚙️ Μενού επιλογών', direction='below')
         self.settings_button.grid(row=0, column=1, sticky='e')
         # self.settings_button.place(x=300, y=30)
 
@@ -105,8 +105,8 @@ class IncomeExpensesFrame(tk.Frame):
         self.settings_menu = Menu(self.settings_button, tearoff=0)
         self.settings_button['menu'] = self.settings_menu
 
-        self.settings_menu.add_command(label="Εισαγωγή κατηγορίας", command=lambda: print("Option 1 selected"))
-        self.settings_menu.add_command(label="Διαγραφή κατηγορίας", command=lambda: print("Option 2 selected"))
+        self.settings_menu.add_command(label="Εισαγωγή κατηγορίας", command=self.UserAddCategory)
+        self.settings_menu.add_command(label="Διαγραφή κατηγορίας", command=self.UserDeleteCategory)
         self.settings_menu.add_command(label="Εξαγωγή σε excel", command=self.export_to_excel)
 
         # --------------------------------ΕΠΙΣΤΡΟΦΗ ΑΡΧΙΚΗ ΣΕΛΙΔΑ----------------------
@@ -159,10 +159,6 @@ class IncomeExpensesFrame(tk.Frame):
         
         # -----------ΓΡΑΦΗΜΑ------
         self.embed_donut_chart(self.db.get_all_data())
-
-
-        # self.plot_donut_chart()
-        # plot_donut_chart(self.db.get_all_data())
 
         # --------------------------------ΚΟΥΜΠΙ ΠΡΟΣΘΕΣΕ ΕΣΟΔΟ------------------------------
         style = ttk.Style(self)
@@ -485,3 +481,82 @@ class IncomeExpensesFrame(tk.Frame):
             # Εμφάνιση μηνύματος ακύρωσης
             messagebox.showwarning("Ακύρωση", "Η εξαγωγή ακυρώθηκε")
     
+    def UserAddCategory(self):
+        self.category_types = {
+            "Έσοδο":1,
+            "Έξοδο":0
+        }
+
+        add_category_window = tk.Toplevel(self)
+        add_category_window.title("Προσθήκη Κατηγορίας")
+
+        tk.Label(add_category_window, text="Όνομα Κατηγορίας:", font=("Helvetica", 16)).grid(row=0, column=0, padx=10,
+                                                                                            pady=10)
+        self.category_name_entry = tk.Entry(add_category_window, font=("Helvetica", 16))
+        self.category_name_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        tk.Label(add_category_window, text="Τύπος Κατηγορίας:", font=("Helvetica", 16)).grid(row=1, column=0, padx=10,
+                                                                                            pady=10)
+        self.category_type_var = tk.StringVar()
+        self.category_type_var.set(list(self.category_types.keys())[0])
+
+
+        ttk.Combobox(add_category_window, textvariable=self.category_type_var, values=["Έσοδο", "Έξοδο"],
+                    font=("Helvetica", 16)).grid(row=1, column=1, padx=10, pady=10)
+        
+        save_button = ttk.Button(add_category_window, text="Αποθήκευση", command=self.UserSaveCategory, style='success.TButton')
+        save_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+        
+        print("type ", self.category_type_var)
+        print("entry ", self.category_name_entry)
+    
+    def UserDeleteCategory(self):
+
+        delete_category_window = tk.Toplevel(self)
+        delete_category_window.title("Διαγραφή Κατηγορίας")
+        existing_categories = [cat[1] for cat in self.indb.showData('category_table', dataframe=False)]
+
+        tk.Label(delete_category_window, text="Επιλογή Κατηγορίας:", font=("Helvetica", 16)).grid(row=0, column=0, padx=10, pady=10)
+        self.category_name_var = tk.StringVar()
+        ttk.Combobox(delete_category_window, textvariable=self.category_name_var, values=existing_categories, font=("Helvetica", 16)).grid(row=0, column=1, padx=10, pady=10)
+
+        delete_button = ttk.Button(delete_category_window, text="Διαγραφή", command=self.UserRemoveCategory, style='danger.TButton')
+        delete_button.grid(row=1, column=0, columnspan=2, pady=10)
+
+                    # category_name = category_name_var.get()
+            # if not category_name:
+            #     messagebox.showerror("Σφάλμα", "Παρακαλώ επιλέξτε μια κατηγορία για διαγραφή.")
+            #     return
+
+            # # Διαγραφή της κατηγορίας από τη βάση δεδομένων
+            # self.indb.DeleteCategory(category_name)
+
+            # # Ενημερώστε τις επιλογές κατηγοριών
+            # self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
+            # self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 0]
+
+            # messagebox.showinfo("Επιτυχία", f"Η κατηγορία '{category_name}' διαγράφηκε επιτυχώς.")
+            # delete_category_window.destroy()
+
+
+    def UserSaveCategory(self):
+        
+        category_name_entry = self.category_name_entry.get()
+        category_type_entry = self.category_type_var.get()
+
+        existing_categories = [cat[1] for cat in self.indb.showData('category_table', dataframe=False)]
+
+        if category_name_entry in existing_categories :
+            messagebox.showwarning("Προειδοποίηση", "H κατηγορία υπάρχει ήδη")
+        else: 
+            self.indb.AddCategory(category_name_entry, self.category_types[category_type_entry])
+        
+    def UserRemoveCategory(self):
+        self.category_name_var.get()
+        existing_categories = [cat[1] for cat in self.indb.showData('category_table', dataframe=False)]
+        if self.category_name_var not in existing_categories:
+            self.indb.DeleteCategory(self.category_name_var)
+        else:
+            messagebox.showwarning("Προειδοποίηση", "Η κατηγορία δεν μπορεί να διαγραφεί διότι χρησιμοποιείται.")
+        
