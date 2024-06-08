@@ -8,7 +8,6 @@ from app import *
 import random
 from analysis import FinanceAnalysis
 
-
 def current_date(show_full_date = False):
     # Return the current date as a string
     if show_full_date:
@@ -70,7 +69,7 @@ def main():
     home_frame.grid_rowconfigure(1, weight=1)
 
     # Analysis Frame Widgets
-    tk.Label(analysis_frame, text="Ανάλυση", font=("Helvetica", 35)).grid(row=1, column=0, sticky='ew', padx=10, pady=200)
+    # tk.Label(analysis_frame, text="Ανάλυση", font=("Helvetica", 35)).grid(row=1, column=0, sticky='ew', padx=10, pady=200)
     bttk.Button(income_expenses_frame, text="Επιστροφή", style='primary-outline.TButton', command=lambda: show_frame(home_frame)).grid(row=0, column=2, sticky='w', pady=10)
     bttk.Button(analysis_frame, text="Back to Home", style='primary-outline.TButton', command=lambda: show_frame(home_frame)).grid(row=10, column=0, sticky='ew')
 
