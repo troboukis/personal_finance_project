@@ -73,6 +73,7 @@
 Για να ανοίξουμε το πρόγραμμα από το Terminal/Command Prompt θα πρέπει να τρέξουμε την παρακάτω εντολή:
 ``` bash
 python main.py
+```
 
 **Εάν είστε σε υπολογιστή Mac ενδέχεται να υπάρξει το παρακάτω σφάλμα. 
 `locale.Error: unsupported locale setting`.
