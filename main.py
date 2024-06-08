@@ -7,6 +7,14 @@ from income_expenses import IncomeExpensesFrame
 from app import *
 import random
 from analysis import FinanceAnalysis
+import locale
+try:
+    locale.setlocale(locale.LC_ALL, 'el_GR.UTF-8')
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')  # Fallback locale
+
+
+
 
 def current_date(show_full_date = False):
     # Return the current date as a string

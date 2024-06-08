@@ -27,6 +27,7 @@
 Μόλις ολοκληρωθεί η εγκατάσταση του `virtualenv`:
 
 1. **Πλοηγούμαστε μέσω Terminal/Command Prompt στον φάκελο που θα αποθηκευτεί το πρόγραμμα χρησιμοποιώντας την εντολή αλλαγής καταλόγου cd. Το path/to/your/project είναι η διεύθυνση του φακέλου που θα αποθηκευτεί το πρόγραμμα.**
+
    ```bash
    cd path/to/your/project
    ```
@@ -38,7 +39,7 @@
 
 #### Ενεργοποίηση του Εικονικού Περιβάλλοντος
 
-Για να ενεργοποιήσουμε το `env` ώστε να εγκαταστήσουμε τις βιβλιοθήκες θα τρέξουμε τις παρακάτω εντολές.
+Για να ενεργοποιήσουμε το `env` ώστε να εγκαταστήσουμε τις βιβλιοθήκες θα τρέξουμε τις παρακάτω εντολές ενώ βρισκόμαστε μέσα στον φάκελο του πρότζεκτ.
 
 **macOS:**
    ```bash
@@ -67,3 +68,12 @@
    ```bash
    pip install -r requirements.txt
    ```
+
+### Ανοίγουμε το πρόγραμμα
+Για να ανοίξουμε το πρόγραμμα από το Terminal/Command Prompt θα πρέπει να τρέξουμε την παρακάτω εντολή:
+``` bash
+python main.py
+
+**Εάν είστε σε υπολογιστή Mac ενδέχεται να υπάρξει το παρακάτω σφάλμα. 
+`locale.Error: unsupported locale setting`.
+Ανοίξτε το αρχείο που βρίσκεται στο `/Users/username/path_to_your_project/lib/your_python_version/site-packages/ttkbootstrap/dialogs/dialogs.py` και αντικαταστήστε στη γραμμή 566 τον εξής κώδικα `locale.setlocale(locale.LC_ALL, locale.setlocale(locale.LC_TIME, ""))` με αυτόν`locale.setlocale(locale.LC_ALL, 'el_GR.UTF-8')`. ***
