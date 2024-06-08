@@ -75,6 +75,5 @@
 python main.py
 ```
 
-*Εάν είστε σε υπολογιστή Mac ενδέχεται να υπάρξει το παρακάτω σφάλμα. 
-`locale.Error: unsupported locale setting`.
-Ανοίξτε το αρχείο που βρίσκεται στο `/Users/username/path_to_your_project/lib/your_python_version/site-packages/ttkbootstrap/dialogs/dialogs.py` και αντικαταστήστε στη γραμμή 566 τον εξής κώδικα `locale.setlocale(locale.LC_ALL, locale.setlocale(locale.LC_TIME, ""))` με αυτόν`locale.setlocale(locale.LC_ALL, 'el_GR.UTF-8')`. *
+*Εάν είστε σε υπολογιστή Mac ενδέχεται να υπάρξει το παρακάτω σφάλμα: `locale.Error: unsupported locale setting`. Ανοίξτε το αρχείο που βρίσκεται στο `/Users/username/path_to_your_project/lib/your_python_version/site-packages/ttkbootstrap/dialogs/dialogs.py` και αντικαταστήστε στη γραμμή 566 τον εξής κώδικα `locale.setlocale(locale.LC_ALL, locale.setlocale(locale.LC_TIME, ""))` με αυτόν `locale.setlocale(locale.LC_ALL, 'el_GR.UTF-8')`.*
+
