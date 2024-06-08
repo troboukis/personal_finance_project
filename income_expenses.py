@@ -507,56 +507,89 @@ class IncomeExpensesFrame(tk.Frame):
         save_button = ttk.Button(add_category_window, text="Αποθήκευση", command=self.UserSaveCategory, style='success.TButton')
         save_button.grid(row=2, column=0, columnspan=2, pady=10)
 
+    def UserSaveCategory(self):
+        category_name_entry = self.category_name_entry.get()
+        category_type_entry = self.category_type_var.get()
         
-        print("type ", self.category_type_var)
-        print("entry ", self.category_name_entry)
+        # Retrieve existing categories with their types
+        existing_categories = self.indb.showData('category_table', dataframe=False)
+        
+        # Check if a category with the same name and type already exists
+        for cat in existing_categories:
+            if cat[1] == category_name_entry and cat[2] == self.category_types[category_type_entry]:
+                messagebox.showwarning("Προειδοποίηση", "H κατηγορία υπάρχει ήδη")
+                return
+        
+        # If not found, add the new category
+        result = self.indb.AddCategory(category_name_entry, self.category_types[category_type_entry])
+        
+        # Show success message
+        if "προστέθηκε επιτυχώς" in result:
+            messagebox.showinfo("Επιτυχία", result)
+            self.update_front_end
+        else:
+            messagebox.showerror("Σφάλμα", result)
+
     
     def UserDeleteCategory(self):
-
         delete_category_window = tk.Toplevel(self)
         delete_category_window.title("Διαγραφή Κατηγορίας")
-        existing_categories = [cat[1] for cat in self.indb.showData('category_table', dataframe=False)]
+        existing_categories = self.indb.showData('category_table', dataframe=False)
+
+        # Extract category names and types
+        category_names = [cat[1] for cat in existing_categories]
+        category_types = {1: 'Έσοδο', 0: 'Έξοδο'}
 
         tk.Label(delete_category_window, text="Επιλογή Κατηγορίας:", font=("Helvetica", 16)).grid(row=0, column=0, padx=10, pady=10)
         self.category_name_var = tk.StringVar()
-        ttk.Combobox(delete_category_window, textvariable=self.category_name_var, values=existing_categories, font=("Helvetica", 16)).grid(row=0, column=1, padx=10, pady=10)
-
-        delete_button = ttk.Button(delete_category_window, text="Διαγραφή", command=self.UserRemoveCategory, style='danger.TButton')
-        delete_button.grid(row=1, column=0, columnspan=2, pady=10)
-
-                    # category_name = category_name_var.get()
-            # if not category_name:
-            #     messagebox.showerror("Σφάλμα", "Παρακαλώ επιλέξτε μια κατηγορία για διαγραφή.")
-            #     return
-
-            # # Διαγραφή της κατηγορίας από τη βάση δεδομένων
-            # self.indb.DeleteCategory(category_name)
-
-            # # Ενημερώστε τις επιλογές κατηγοριών
-            # self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
-            # self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 0]
-
-            # messagebox.showinfo("Επιτυχία", f"Η κατηγορία '{category_name}' διαγράφηκε επιτυχώς.")
-            # delete_category_window.destroy()
-
-
-    def UserSaveCategory(self):
+        ttk.Combobox(delete_category_window, textvariable=self.category_name_var, values=category_names, font=("Helvetica", 16)).grid(row=0, column=1, padx=10, pady=10)
         
-        category_name_entry = self.category_name_entry.get()
-        category_type_entry = self.category_type_var.get()
+        tk.Label(delete_category_window, text="Τύπος Κατηγορίας:", font=("Helvetica", 16)).grid(row=1, column=0, padx=10, pady=10)
+        self.category_type_var = tk.StringVar()
+        ttk.Combobox(delete_category_window, textvariable=self.category_type_var, values=list(category_types.values()), font=("Helvetica", 16)).grid(row=1, column=1, padx=10, pady=10)
 
-        existing_categories = [cat[1] for cat in self.indb.showData('category_table', dataframe=False)]
+        delete_button = ttk.Button(delete_category_window, text="Διαγραφή", command=lambda: self.UserRemoveCategory(delete_category_window), style='danger.TButton')
+        delete_button.grid(row=2, column=0, columnspan=2, pady=10)
 
-        if category_name_entry in existing_categories :
-            messagebox.showwarning("Προειδοποίηση", "H κατηγορία υπάρχει ήδη")
-        else: 
-            self.indb.AddCategory(category_name_entry, self.category_types[category_type_entry])
+
         
-    def UserRemoveCategory(self):
-        self.category_name_var.get()
-        existing_categories = [cat[1] for cat in self.indb.showData('category_table', dataframe=False)]
-        if self.category_name_var not in existing_categories:
-            self.indb.DeleteCategory(self.category_name_var)
+    def UserRemoveCategory(self, delete_category_window):
+        category_name = self.category_name_var.get()
+        category_type_str = self.category_type_var.get()
+        
+        # Map category type string to integer
+        category_types = {'Έσοδο': 1, 'Έξοδο': 0}
+        category_type = category_types[category_type_str]
+        
+        existing_categories = self.indb.showData('category_table', dataframe=False)
+        
+        # Check if category exists with the specified type
+        category_exists = any(cat[1] == category_name and cat[2] == category_type for cat in existing_categories)
+        
+        if not category_exists:
+            messagebox.showwarning("Προειδοποίηση", "Η κατηγορία δεν μπορεί να διαγραφεί διότι δεν υπάρχει.")
+            return
+        
+        # Attempt to delete the category
+        result = self.indb.DeleteCategory(category_name, category_type)
+        
+        # Show result message
+        if "διαγράφηκε επιτυχώς" in result:
+            messagebox.showinfo("Επιτυχία", result)
+            self.update_front_end()
         else:
-            messagebox.showwarning("Προειδοποίηση", "Η κατηγορία δεν μπορεί να διαγραφεί διότι χρησιμοποιείται.")
+            messagebox.showerror("Σφάλμα", result)
+    
+    def update_front_end(self):
+        self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
+        self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 0]
+        if self.show_expenses.get() == True:
+            self.category.set(self.expense_category_options[-2])
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
+                         values=self.expense_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
+        else:
+            self.category.set(self.income_category_options[-2])
+            ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
+                         values=self.income_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
+        print("update front end RUN")
         

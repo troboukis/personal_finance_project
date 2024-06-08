@@ -125,11 +125,9 @@ class DatabaseConnection:
         df=df[[1, 10, 2, 3, 9, 7]].copy()
         df.columns=['Ημερομηνία', 'Τύπος', 'Περιγραφή', 'Ποσό', 'Κατηγορία', 'Συχνότητα']
         df['Τύπος'] = df['Τύπος'].replace(0, 'Έξοδο').replace(1, 'Έσοδο')
-        
-        print(df["Ημερομηνία"])
+
         df['Ημερομηνία'] = pd.to_datetime(df['Ημερομηνία'])
-        print("--------------------")
-        print(df["Ημερομηνία"])
+
         df = df.sort_values(by="Ημερομηνία").reset_index(drop=True).copy()
         df.to_csv("all_data.csv", index=False)
         return df
@@ -166,7 +164,6 @@ class DatabaseConnection:
             # Use pandas DataFrame for prettifying and easy manipulation of data and column names
             df = pd.DataFrame(data, columns=columns)
             self.__exit__(None, None, None)
-            print(df)
             return df
 
 
@@ -393,15 +390,19 @@ class Income(DatabaseConnection):
     def AddCategory(self, category_name, category_type):
         """
         Προσθέτει μια νέα κατηγορία στον πίνακα 'category_table'.
- 
+    
         :param category_name: Το όνομα της νέας κατηγορίας.
         :param category_type: Ο τύπος της κατηγορίας (π.χ. έξοδα ή έσοδα).
         """
         self.__enter__()
         try:
-            # Ελέγχος αν η κατηγορία υπάρχει ήδη
-            check_query = "SELECT EXISTS(SELECT 1 FROM category_table WHERE name = ?)"
-            self.cursor.execute(check_query, (category_name,))
+            # Ελέγχος αν η κατηγορία υπάρχει ήδη με τον ίδιο τύπο
+            check_query = "SELECT EXISTS(SELECT 1 FROM category_table WHERE name = ? AND type = ?)"
+            self.cursor.execute(check_query, (category_name, category_type))
+            exists = self.cursor.fetchone()[0]
+
+            if exists:
+                return f"Η κατηγορία '{category_name}' με τύπο '{category_type}' υπάρχει ήδη."
 
             # Προσθήκη της νέας κατηγορίας
             insert_query = "INSERT INTO category_table (name, type) VALUES (?, ?)"
@@ -416,18 +417,19 @@ class Income(DatabaseConnection):
             self.__exit__(None, None, None)
            
        
-    def DeleteCategory(self, category_name, force=False):
+    def DeleteCategory(self, category_name, category_type, force=False):
         """
         Διαγράφει μια κατηγορία από τον πίνακα 'category_table'.
- 
+        
         :param category_name: Το όνομα της κατηγορίας που θα διαγραφεί.
+        :param category_type: Ο τύπος της κατηγορίας (π.χ. έξοδα ή έσοδα).
         :param force: Εάν True, διαγράφει την κατηγορία ακόμα και αν χρησιμοποιείται σε συναλλαγές. Προεπιλογή είναι False.
         """
         self.__enter__()
         try:
             # Διαγραφή της κατηγορίας
-            delete_query = "DELETE FROM category_table WHERE name = ?"
-            self.cursor.execute(delete_query, (category_name,))
+            delete_query = "DELETE FROM category_table WHERE name = ? AND type = ?"
+            self.cursor.execute(delete_query, (category_name, category_type))
             
             self.conn.commit()
             return f"Η κατηγορία '{category_name}' διαγράφηκε επιτυχώς."

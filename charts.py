@@ -20,8 +20,8 @@ def plot_donut_chart(data):
     remaining_amount = total_income - total_expense
 
     # Text outside the donut
-    plt.text(.1, 1, f'Έσοδα: {total_income} €', color='green', fontsize=6)
-    plt.text(-1.1, 1, f'Έξοδα: {total_expense} €', color='red', fontsize=6)
+    plt.text(.5, 1, f'Έσοδα: {total_income} €', color='green', fontsize=6)
+    plt.text(-1.3, 1, f'Έξοδα: {total_expense} €', color='red', fontsize=6)
     
     # Text inside the donut
     plt.text(0, 0, f'Υπόλοιπο\n{remaining_amount} €', ha='center', va='center', fontsize=10, weight='light', color='white')

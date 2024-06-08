@@ -15,7 +15,6 @@ class FinanceAnalysis(tk.Frame):
         # Initialize the DatabaseConnection
         self.data = DatabaseConnection(new_db)
         self.df = self.data.get_all_data()  # Assuming get_all_data is a method, it needs to be called with ()
-        print(self.df)
 
         # Initialize canvas attribute for later reference
         self.canvas = None
@@ -31,7 +30,7 @@ class FinanceAnalysis(tk.Frame):
         figure = chart1(data)
         self.canvas = FigureCanvasTkAgg(figure, self)  # Save the canvas as an instance attribute
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=2, column=0, rowspan=2, columnspan=2, padx=10, pady=10)
+        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=1, columnspan=1, padx=10, pady=10)
 
 def chart1(data):
     plt.rcParams["figure.figsize"] = (4, 4)  # Smaller figure size
@@ -54,6 +53,7 @@ def chart1(data):
     ax.text(0, 0, f'Υπόλοιπο\n{remaining_amount} €', ha='center', va='center', fontsize=10, weight='bold', color='white')
 
     return fig
+
 
 # Example usage in a root window
 if __name__ == "__main__":
