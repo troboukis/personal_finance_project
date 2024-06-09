@@ -6,7 +6,6 @@ def plot_donut_chart(data):
     plt.rcParams["figure.figsize"] = (2, 2)
     data['Ποσό'] = pd.to_numeric(data['Ποσό'], errors='coerce')
     summary = data.groupby('Τύπος')['Ποσό'].sum()
-    print(data)
     colors = ['green' if typ == 'Έσοδο' else 'red' for typ in summary.index]
     
     fig, ax = plt.subplots()

@@ -1,9 +1,9 @@
 import sqlite3
 import pandas as pd
 import datetime
-# from expenses import ExpensesFrame
-# from income import IncomeFrame
-            
+import os
+
+print(f"{os.path.dirname(os.path.abspath(__file__))}/new_db.db")    
 new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
 
 income_list = ["Άλλα έσοδα", "Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Κέρδη από μετοχές", "Αποζημιώσεις", "Σύνταξη"]
@@ -295,7 +295,7 @@ class Income(DatabaseConnection):
         record_id = self.cursor.fetchone()
         
         if not record_id:
-            print("No record found matching the criteria.")
+            print("Δεν βρέθηκε εγγραφή που να ταιριάζει με τα κριτήρια.")
             self.__exit__(None, None, None)
             return
         else:
@@ -314,7 +314,7 @@ class Income(DatabaseConnection):
         record_id = self.cursor.fetchone()
         
         if not record_id:
-            print("No record found matching the criteria.")
+            print("Δεν βρέθηκε εγγραφή που να ταιριάζει με τα κριτήρια.")
             self.__exit__(None, None, None)
             return
         else:
@@ -344,7 +344,7 @@ class Income(DatabaseConnection):
         """, (n_description, n_date, n_amount, n_frequency, n_category, id))
         
         self.conn.commit()
-        print("Expenses record updated successfully, ID:", id)
+        print("Η εγγραφή εξόδων ενημερώθηκε επιτυχώς, ID:", id)
         self.__exit__(None, None, None)
 
     def DeleteIncome(self, income_id):
@@ -358,10 +358,10 @@ class Income(DatabaseConnection):
             """, (income_id,))
 
             self.conn.commit()  # Commit the transaction
-            print(f"Income record deleted successfully, ID: {income_id}")
+            print(f"Η εγγραφή εσόδων διαγράφηκε επιτυχώς, ID: {income_id}")
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"Σφάλμα: {e}")
             self.conn.rollback()  # Rollback the transaction in case of error
 
         finally:
@@ -434,8 +434,8 @@ class Income(DatabaseConnection):
             self.conn.commit()
             return f"Η κατηγορία '{category_name}' διαγράφηκε επιτυχώς."
         except sqlite3.IntegrityError as e:
-            return f"Παρουσιάστηκε σφάλμα: {e}"
+            return f"Η κατηγορία δεν μπορεί να διαγραφεί διότι χρησιμοποιείται."
         except Exception as e:
-            return f"Άγνωστο σφάλμα: {e}"
+            return f"Σφάλμα: {e}"
         finally:
             self.__exit__(None, None, None)
