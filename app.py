@@ -3,8 +3,7 @@ import pandas as pd
 import datetime
 import os
 
-print(f"{os.path.dirname(os.path.abspath(__file__))}/new_db.db")    
-new_db = "/Users/troboukis/Code/EAP/PLHPRO/final-project/FINANCE-DATABASE/new_db.db"
+new_db = f"{os.path.dirname(os.path.abspath(__file__))}/new_db.db"
 
 income_list = ["Άλλα έσοδα", "Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Κέρδη από μετοχές", "Αποζημιώσεις", "Σύνταξη"]
 expenses_list = ["Άλλα έξοδα", "Ενοίκια", "Τρόφιμα","Δαπάνες για ενέργεια", "Νερό", "Καύσιμα", "Τηλεπικοινωνίες", "Ασφάλειες", "Φόροι και τέλη", "Δόση δανείου", "Συντήρηση και επισκευές"]
