@@ -70,7 +70,7 @@ class IncomeExpensesFrame(tk.Frame):
         self.description = tk.StringVar()
         self.amount = tk.StringVar()
         self.category = tk.StringVar()
-        self.category.set(self.income_category_options[-2])
+        self.category.set(self.income_category_options[-1])
 
         self.date = tk.StringVar()
         self.date.set(current_date())
@@ -327,7 +327,7 @@ class IncomeExpensesFrame(tk.Frame):
         # This method is called when the income checkbox is clicked
         if self.show_income.get() == True:
             self.show_expenses.set(False)  # Uncheck expenses
-            self.category.set(self.income_category_options[-2])
+            self.category.set(self.income_category_options[-1])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
                          values=self.income_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
@@ -336,7 +336,7 @@ class IncomeExpensesFrame(tk.Frame):
         # This method is called when the expenses checkbox is clicked
         if self.show_expenses.get() == True:
             self.show_income.set(False)  # Uncheck income
-            self.category.set(self.expense_category_options[-2])
+            self.category.set(self.expense_category_options[-1])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
                          values=self.expense_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
@@ -584,11 +584,11 @@ class IncomeExpensesFrame(tk.Frame):
         self.income_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 1]
         self.expense_category_options = [i[1] for i in self.indb.showData('category_table') if i[2] == 0]
         if self.show_expenses.get() == True:
-            self.category.set(self.expense_category_options[-2])
+            self.category.set(self.expense_category_options[-1])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
                          values=self.expense_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         else:
-            self.category.set(self.income_category_options[-2])
+            self.category.set(self.income_category_options[-1])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
                          values=self.income_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         print("update front end RUN")
