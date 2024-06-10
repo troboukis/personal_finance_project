@@ -218,12 +218,12 @@ class IncomeExpensesFrame(tk.Frame):
     def on_select(self, event):
         current_selected_item = self.tree.selection()
 
-        # Check if the currently selected item was already selected before
+        # Ελέγξτε αν το τρέχον επιλεγμένο στοιχείο ήταν ήδη επιλεγμένο πριν
         if current_selected_item == self.last_item:
-            # Deselect and reset the last_item
-            self.tree.selection_remove(current_selected_item)
+            # Αποεπιλογή και επαναφορά του last_item
+            # self.tree.selection_remove(current_selected_item)
             self.last_item = None
-            self.clear_input()  # Clear the form or reset the UI as necessary
+            self.clear_input()  # Καθαρίζουμε τη φόρμα
         else:
             # Update the form only if a new item is selected
             if current_selected_item:

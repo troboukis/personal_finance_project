@@ -9,15 +9,11 @@ import random
 from analysis import FinanceAnalysis
 
 def current_date(show_full_date = False):
-    # Return the current date as a string
+    # Επιστροφή της τρέχουσας ημερομηνίας ως συμβολοσειρά
     if show_full_date:
         return datetime.datetime.now().strftime("%b %d %Y, %H:%M")
     else:
         return datetime.datetime.now().strftime("%Y-%m-%d")
-
-def on_enter_frame(frame):
-    # Define actions to take when a frame is entered
-    print(f"Entering {frame.winfo_name()}")
 
 def show_frame(frame):
     frame.tkraise()
@@ -31,45 +27,46 @@ def main():
     style.configure('W.TButton', font=('Roboto', 20, 'bold'), padding=20)
     
 
-    # Creating frames for each section
-    home_frame = tk.Frame(root)
-    income_expenses_frame = IncomeExpensesFrame(root)
-    analysis_frame = FinanceAnalysis(root)
+    # Δημιουργία πλαισίων για κάθε τμήμα του προγράμματος
+    home_frame = tk.Frame(root) #Πρώτη σελίδα
+    income_expenses_frame = IncomeExpensesFrame(root) #Έσοδα - Έξοδα
+    analysis_frame = FinanceAnalysis(root) # Ανάλυση
 
     frames = [home_frame, income_expenses_frame, analysis_frame]
+    # Τοποθέτηση στη σελίδα
     for frame in frames:
         frame.grid(row=0, column=0, sticky='nsew')
 
-    # Configuring grid layout on root
+    # Διαμόρφωση διάταξης στο root
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
 
-    show_full_date = True
-    # Add Date Label to Each Frame using grid
+    # Προσθήκη ημερομηνίας σε κάθε πλαίσιο χρησιμοποιώντας grid
     date_label_format = ("Courier", 12)
     for i, frame in enumerate(frames):
         tk.Label(frame, text=current_date(True), font=date_label_format)\
             .grid(row=0, column=0, sticky='w', padx=10, pady=10)
 
-    # Home Frame Widgets
+    # Διαμόρφωση πρώτης σελίδας
     tk.Label(home_frame, text="Διαχείριση προσωπικών οικονομικών", font=("Helvetica", 35), background="#FFDEAD", foreground="#000000").grid(row=1, column=0, columnspan=3, sticky='ew', padx=10, pady=50)
-    # default separator style
+    # Διαχωριστικό σελίδας
     separator = bttk.Separator(home_frame, orient='horizontal')
     separator.grid(row=1, column=0, columnspan=3, sticky='ew', pady=(170, 90))
     tk.Label(home_frame, text="Ομάδα Δ", font=("Helvetica", 25), background="#FFDEAD", foreground="#000000").grid(row=2, column=0, columnspan=3, sticky='ew', padx=0, pady=0)
+    # Ομάδα
     tk.Label(home_frame, text="Θανάσης Τρομπούκης (συντονιστής), Αλέξανδρος Ρουμελιωτάκης, Νίκος Ταμπουρατζής, Γιώργος Παπαδόπουλος, Γιώργος Τσιώκος", font=("Helvetica", 15), background="#FFDEAD", foreground="#000000").grid(row=3, column=0, columnspan=3, sticky='ew', padx=0, pady=0)
 
+    # Κουμπί έσοδα - έξοδα
     bttk.Button(home_frame, text='Έσοδα - Έξοδα', style='primary.TButton', command=lambda: show_frame(income_expenses_frame))\
         .grid(row=4, column=0, padx=20, pady=40, sticky='ew')
 
+    # Κουμπί Ανάλυσης
     bttk.Button(home_frame, text='Ανάλυση', style='primary.TButton', command=lambda: show_frame(analysis_frame))\
         .grid(row=4, column=1, padx=20, pady=20, sticky='ew')
 
     home_frame.grid_columnconfigure((0, 1), weight=1, uniform="group1")
     home_frame.grid_rowconfigure(1, weight=1)
 
-    # Analysis Frame Widgets
-    # tk.Label(analysis_frame, text="Ανάλυση", font=("Helvetica", 35)).grid(row=1, column=0, sticky='ew', padx=10, pady=200)
     bttk.Button(income_expenses_frame, text="Επιστροφή", style='primary-outline.TButton', command=lambda: show_frame(home_frame)).grid(row=0, column=2, sticky='w', pady=10)
     bttk.Button(analysis_frame, text="Back to Home", style='primary-outline.TButton', command=lambda: show_frame(home_frame)).grid(row=10, column=0, sticky='ew')
 
@@ -78,6 +75,7 @@ def main():
     root.mainloop()
 
 if __name__ == "__main__":
+    # Αρχικοποίηση βάσης δεδομένων
     with DatabaseConnection(new_db) as db:
         
         db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 0, 'Μηνιαίο')
@@ -95,8 +93,10 @@ if __name__ == "__main__":
 
     # Καταχώρηση βασικών κατηγοριών
 
+    # Δημιουργία ενός νέου αντικειμένου Income με όρισμα το path που θα αποθηκευτεί η βάση
     dbin = Income(new_db)
     for income in income_list+expenses_list:
+        # Καλούμε τη μέθοδο InsertCategory για να δημιουργήσουμε στο βρόχο τις νέες κατηγορίες εσόδων - εξόδων. Το εάν θα μπει στα έσοδα ή έξοδα αποφασίζεται στο app.py στη μέθοδο InsertCategory
         dbin.InsertCategory(income)
 
     income_examples = [
@@ -122,8 +122,6 @@ if __name__ == "__main__":
     {"date": "2023-04-10", "name": "Επισκευή βλάβης στο σπίτι", "category": "Συντήρηση και επισκευές", "amount": 150},
     {"date": "2023-04-11", "name": "Έκτακτα έξοδα ιατρικής φροντίδας", "category": "Άλλα έξοδα", "amount": 180}
 ]
-
-
 
      # Καταχώρηση ψεύτικων εσόδων εάν δεν υπάρχουν
     if len(dbin.showData('income'))<1:

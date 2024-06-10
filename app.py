@@ -5,20 +5,30 @@ import os
 
 new_db = f"{os.path.dirname(os.path.abspath(__file__))}/new_db.db"
 
+# Βασική λίστα κατηγοριών εσόδων - εξόδων
 income_list = ["Άλλα έσοδα", "Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Κέρδη από μετοχές", "Αποζημιώσεις", "Σύνταξη"]
 expenses_list = ["Άλλα έξοδα", "Ενοίκια", "Τρόφιμα","Δαπάνες για ενέργεια", "Νερό", "Καύσιμα", "Τηλεπικοινωνίες", "Ασφάλειες", "Φόροι και τέλη", "Δόση δανείου", "Συντήρηση και επισκευές"]
 
 def current_date():
-    # Return the current date as a string
+    # Επιστροφή της τρέχουσας ημερομηνίας ως συμβολοσειρά
     return datetime.datetime.now().strftime("%Y-%m-%d")
 
 def return_index(string, data):
+    '''
+    Επιστρέφει το index της κατηγορίας. 
+    :string: η περιγραφή της κατηγορίας.
+    :data: τα δεδομένα όπως έρχονται από το self.indb.showData() π.χ. self.indb.showData('category_table')
+    '''
     for item in data:
         if string == item[1]:
             return item[0]
-    return 12
+    return 0
         
 def unstuck_frequency(text):
+    '''
+    Συνάρτηση που επιστρέφει το index της συχνότητας όταν λαμβάνει ως όρισμα string με την περιγραφή της συχνότητας.
+    :text: string με την περιγραφή της συχνότητας εσόδου - εξόδου
+    '''
     if text=='Έκτακτο':
         return 2
     elif text == "Ετήσιο":
@@ -78,6 +88,7 @@ expenses_sql = '''
     )
     '''
 
+# Λίστα με τις εντολές της SQL
 commands = [type_sql, freq_sql, category_sql, income_sql, expenses_sql]
 
 class DatabaseConnection:
@@ -88,6 +99,7 @@ class DatabaseConnection:
         self.cursor = None
 
     def __enter__(self):
+        '''Είσοδος στη βάση δεδομένων'''
         if self.conn is None:
             self.conn = sqlite3.connect(self.db_path)
             self.cursor = self.conn.cursor()
@@ -96,12 +108,16 @@ class DatabaseConnection:
             return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        '''Έξοδος από τη βάση δεδομένων '''
         if self.conn:
             self.conn.commit()
             self.conn.close()
             self.conn=None
 
     def create_table(self, sql_command):
+        '''Δημιουργία πίνακα
+        :sql_commant: η εντολή της SQL
+        '''
         self.cursor.execute('PRAGMA foreign_keys = ON;')
         self.cursor.execute(sql_command)
         self.conn.commit()
@@ -134,6 +150,7 @@ class DatabaseConnection:
     def printData(self, table):
         '''
         Επιστρέφει τα δεδομένα της βάσης δεδομένων. 
+        :table: Ο πίνακας που θέλουμε να εμφανίσουμε
         '''
         self.__enter__()
         parameter = f'''
@@ -149,18 +166,19 @@ class DatabaseConnection:
 
     def showData(self, table, dataframe=False):
         '''
-        Επιστρέφει τα δεδομένα της βάσης δεδομένων.
+        Επιστρέφει τα δεδομένα της βάσης δεδομένων
+        :table: ο πίνακας που θέλουμε να πάρουμε τα δεδομένα.
+        :dataframe: Boolean μεταβλητή για το εάν θέλουμε να λάβουμε pandas dataframe ή όχι
         '''
         self.__enter__()
-        parameter = f"SELECT * FROM {table}" # SELECT * FROM {table} JOIN frequency_table ON freq_id = frequency
-        
+        parameter = f"SELECT * FROM {table}" 
         self.cursor.execute(parameter)
         data = self.cursor.fetchall()
         if not dataframe:
             return data
         else:
             columns = [description[0] for description in self.cursor.description]
-            # Use pandas DataFrame for prettifying and easy manipulation of data and column names
+            # Δημιουργία Pandas DataFrame
             df = pd.DataFrame(data, columns=columns)
             self.__exit__(None, None, None)
             return df
@@ -168,7 +186,15 @@ class DatabaseConnection:
 
 
     def initializeTable(self, sql_code, table_name, column1, column2, value1, value2):
-        ''' Αρχικοποιοεί τους πίνακες για συχνότητα και τύπο εγγραφής'''
+        ''' Αρχικοποιεί τους πίνακες για συχνότητα και τύπο εγγραφής
+        π.χ  db.initializeTable(freq_sql, 'frequency_table', 'freq_id', 'name', 0, 'Μηνιαίο')
+        :sql_code: Το σκριπτ της SQL 
+        :table_name:ο πίνακας που θέλουμε να αρχικοποιήσουμε
+        :column1:το όνομα της πρώτης στήλης (π.χ. name)
+        :column2: το όνομα της δεύτερης στήλης (π.χ. frequency_id)
+        :value1: η τιμή της πρώτης στήλης
+        :value2: η τιμή της δεύτερης στήλης
+        '''
         try:
             self.create_table(sql_code)  # Assuming this is correctly defined to execute the SQL command
             # Proper SQL string format with table and column names inserted directly (vulnerable to SQL injection if variables are not controlled)
@@ -202,13 +228,13 @@ class Income(DatabaseConnection):
         """
         Εισάγει μια νέα κατηγορία στον πίνακα 'category_table'. 
         Η μέθοδος ζητά από τον χρήστη να καθορίσει εάν η νέα κατηγορία είναι έσοδο (1) ή έξοδο (0), και στη συνέχεια το όνομα της κατηγορίας. 
-        Στη συνέχεια, προσπαθεί να εισάγει αυτές τις τιμές στη βάση δεδομένων. Εάν η εισαγωγή είναι επιτυχής, εκτυπώνει μήνυμα επιτυχίας. Σε περίπτωση 
-        που εμφανιστεί σφάλμα, εκτυπώνει το σχετικό μήνυμα.
+        Στη συνέχεια, προσπαθεί να εισάγει αυτές τις τιμές στη βάση δεδομένων. Εάν η εισαγωγή είναι επιτυχής, εκτυπώνει μήνυμα επιτυχίας. Σε περίπτωση που εμφανιστεί σφάλμα, εκτυπώνει το σχετικό μήνυμα.
+        :category_name: το όνομα της κατηγορίας
         """
-        # ΣΥΝΔΕΣΗ ΣΤΗ ΒΑΣΗ
+        # Σύνδεση στη βάση
         self.__enter__()  # Ensure the connection is open
 
-        # ΕΛΕΓΧΟΣ ΤΩΝ ΥΠΑΡΧΟΝΤΩΝ ΚΑΤΗΓΟΡΙΩΝ
+        # Ελέγχουμε τις υπάρχουσες κατηγορίες για να δούμε εάν υπάρχει ήδη η κατηγορία που προσπαθούμε να περάσουμε
         existing_categories = [cat[1] for cat in self.showData('category_table', dataframe=False)]
         if category_name in existing_categories:
             print(f"Η κατηγορία εσόδων που προσπαθείτε να εισάγετε υπάρχει ήδη.")
@@ -216,12 +242,12 @@ class Income(DatabaseConnection):
 
             return 0
 
-        # ΚΑΤΑΧΩΡΗΣΗ ΝΕΑΣ ΚΑΤΗΓΟΡΙΑΣ
+        # Καταχώρηση νέας κατηγορίας
         else:
             insert_query = "INSERT INTO category_table (name, type) VALUES (?, ?)"
             try:
                 if category_name in income_list:
-                    self.cursor.execute(insert_query, (category_name, 1))  # Correctly using placeholders
+                    self.cursor.execute(insert_query, (category_name, 1))  # 
                     self.conn.commit()  # Commit changes to the database
                     print(f"Η κατηγορία {category_name} εισήχθη επιτυχώς.")
                 else:
@@ -283,6 +309,12 @@ class Income(DatabaseConnection):
             print("Aποσυνδεθήκατε από τη βάση δεδομένων")
     
     def GetID(self, or_description, or_date, or_amount):
+        '''
+        Ανάκτηση του id της εγγραφής εσόδου
+        :or_description: H περιγραφή της εγγραφής όπως έχει μπει από τον χρήστη
+        :or_date: Ημερομηνία
+        :or_amount: Ποσό
+        '''
         self.__enter__()  # Ensure the connection is open
 
         self.cursor.execute("""
@@ -302,6 +334,12 @@ class Income(DatabaseConnection):
             return record_id
         
     def GetExpensesID(self, or_description, or_date, or_amount):
+        '''
+        Ανάκτηση του id της εγγραφής εξόδου
+        :or_description: H περιγραφή της εγγραφής όπως έχει μπει από τον χρήστη
+        :or_date: Ημερομηνία
+        :or_amount: Ποσό
+        '''
         self.__enter__()  # Ensure the connection is open
 
         self.cursor.execute("""
@@ -321,6 +359,7 @@ class Income(DatabaseConnection):
             return record_id
         
     def UpdateIncome(self, n_description, n_date, n_amount, n_frequency, n_category, id):
+        
         self.__enter__()
 
         self.cursor.execute("""
