@@ -6,7 +6,7 @@ import os
 new_db = f"{os.path.dirname(os.path.abspath(__file__))}/new_db.db"
 
 # Βασική λίστα κατηγοριών εσόδων - εξόδων
-income_list = ["Άλλα έσοδα", "Μισθός", "Ενοίκια", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Κέρδη από μετοχές", "Αποζημιώσεις", "Σύνταξη"]
+income_list = ["Άλλα έσοδα", "Μισθός", "Είσπραξη ενοικίου", "Πωλήσεις", "Τόκοι τραπεζικών καταθέσεων", "Κέρδη από μετοχές", "Αποζημιώσεις", "Σύνταξη"]
 expenses_list = ["Άλλα έξοδα", "Ενοίκια", "Τρόφιμα","Δαπάνες για ενέργεια", "Νερό", "Καύσιμα", "Τηλεπικοινωνίες", "Ασφάλειες", "Φόροι και τέλη", "Δόση δανείου", "Συντήρηση και επισκευές"]
 
 def current_date():
@@ -134,18 +134,28 @@ class DatabaseConnection:
     
     def get_all_data(self):
         ''' Επιστρέφει όλα τα έξοδα και τα έσοδα'''
-        data1 = pd.DataFrame(self.printData("income"))
-        data2 = pd.DataFrame(self.printData("expenses"))
-        df = pd.concat([data1, data2])
-        df=df[[1, 10, 2, 3, 9, 7]].copy()
-        df.columns=['Ημερομηνία', 'Τύπος', 'Περιγραφή', 'Ποσό', 'Κατηγορία', 'Συχνότητα']
-        df['Τύπος'] = df['Τύπος'].replace(0, 'Έξοδο').replace(1, 'Έσοδο')
+        try:
+            data1 = pd.DataFrame(self.printData("income"))
+            data2 = pd.DataFrame(self.printData("expenses"))
+            df = pd.concat([data1, data2])
+            df=df[[1, 10, 2, 3, 9, 7]].copy()
+            df.columns=['Ημερομηνία', 'Τύπος', 'Περιγραφή', 'Ποσό', 'Κατηγορία', 'Συχνότητα']
+            df['Τύπος'] = df['Τύπος'].replace(0, 'Έξοδο').replace(1, 'Έσοδο')
 
-        df['Ημερομηνία'] = pd.to_datetime(df['Ημερομηνία'])
+            df['Ημερομηνία'] = pd.to_datetime(df['Ημερομηνία'])
 
-        df = df.sort_values(by="Ημερομηνία").reset_index(drop=True).copy()
-        df.to_csv("all_data.csv", index=False)
-        return df
+            df = df.sort_values(by="Ημερομηνία").reset_index(drop=True).copy()
+            df.to_csv("all_data.csv", index=False)
+            return df
+        except:
+            return pd.DataFrame({
+    'Ημερομηνία': current_date(),  # or np.nan if you prefer
+    'Τύπος': [None],
+    'Περιγραφή': [None],
+    'Ποσό': [0],
+    'Κατηγορία': [None],
+    'Συχνότητα': [None]
+})
     
     def printData(self, table):
         '''
@@ -359,7 +369,7 @@ class Income(DatabaseConnection):
             return record_id
         
     def UpdateIncome(self, n_description, n_date, n_amount, n_frequency, n_category, id):
-        
+
         self.__enter__()
 
         self.cursor.execute("""

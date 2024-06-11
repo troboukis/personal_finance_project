@@ -15,7 +15,6 @@ class IncomeExpensesFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-
         self.last_item = None  # Attribute to store the ID of the last clicked item
 
         self.incomes = []
@@ -26,7 +25,6 @@ class IncomeExpensesFrame(tk.Frame):
         self.show_expenses = tk.BooleanVar(value=False)
 
         self.canvas = None
-
         self.init_ui()
         self.update_table()
     
@@ -221,7 +219,6 @@ class IncomeExpensesFrame(tk.Frame):
         # Ελέγξτε αν το τρέχον επιλεγμένο στοιχείο ήταν ήδη επιλεγμένο πριν
         if current_selected_item == self.last_item:
             # Αποεπιλογή και επαναφορά του last_item
-            # self.tree.selection_remove(current_selected_item)
             self.last_item = None
             self.clear_input()  # Καθαρίζουμε τη φόρμα
         else:
