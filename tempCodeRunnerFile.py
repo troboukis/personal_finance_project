@@ -1,17 +1,6 @@
-     # Καταχώρηση ψεύτικων εσόδων εάν δεν υπάρχουν
-    if len(dbin.showData('income'))<1:
-        for i in income_examples:
-            dbin.InsertIncome(i['name'], 
-                            i['amount'], 
-                            return_index(i['category'], dbin.showData('category_table', dataframe=False)), 
-                            i['date'], 
-                            random.randint(0, 2))
-    
-    # Καταχώρηση ψεύτικων εξόδων εάν δεν υπάρχουν
-    if len(dbin.showData('expenses'))<1:
-        for i in expense_examples:
-            dbin.InsertExpense(i['name'], 
-                            i['amount'], 
-                            return_index(i['category'], dbin.showData('category_table', dataframe=False)), 
-                            i['date'], 
-                            random.randint(0, 2))
+    {"date": "2023-04-05", "name": "Πώληση προϊόντων", "category": "Πωλήσεις", "amount": 300},
+    {"date": "2023-04-07", "name": "Τόκοι καταθέσεων", "category": "Τόκοι τραπεζικών καταθέσεων", "amount": 150},
+    {"date": "2023-04-12", "name": "Κέρδη από μετοχές", "category": "Κέρδη από μετοχές", "amount": 250},
+    {"date": "2023-04-15", "name": "Αποζημίωση ασφάλισης", "category": "Αποζημιώσεις", "amount": 1000},
+    {"date": "2023-04-18", "name": "Συνταξιοδότηση", "category": "Σύνταξη", "amount": 800},
+    {"date": "2023-04-20", "name": "Έσοδα από μικρά projects", "category": "Άλλα έσοδα", "amount": 450}
