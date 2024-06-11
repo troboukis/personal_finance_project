@@ -3,7 +3,6 @@ from tkinter import ttk
 import ttkbootstrap as bttk
 from app import *
 from tkinter import messagebox
-import datetime
 from tkinter import PhotoImage, Menu
 from tkinter.filedialog import asksaveasfilename
 from openpyxl.workbook import Workbook
@@ -12,8 +11,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from CalendarFinance import *
 
 class IncomeExpensesFrame(tk.Frame):
-    def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+    def __init__(self, parent):
+        super().__init__(parent)
 
         self.last_item = None  # Attribute to store the ID of the last clicked item
 
@@ -485,6 +484,7 @@ class IncomeExpensesFrame(tk.Frame):
         }
 
         add_category_window = tk.Toplevel(self)
+        self.add_category_window = add_category_window  # Προσθέτουμε αυτό το νέο attribute
         add_category_window.title("Προσθήκη Κατηγορίας")
 
         tk.Label(add_category_window, text="Όνομα Κατηγορίας:", font=("Helvetica", 16)).grid(row=0, column=0, padx=10,
@@ -520,13 +520,13 @@ class IncomeExpensesFrame(tk.Frame):
         # If not found, add the new category
         result = self.indb.AddCategory(category_name_entry, self.category_types[category_type_entry])
         
-        # Show success message
+         # Show success message
         if "προστέθηκε επιτυχώς" in result:
             messagebox.showinfo("Επιτυχία", result)
             self.update_front_end()
+            self.add_category_window.destroy()  # Κλείσιμο του παραθύρου προσθήκης κατηγορίας
         else:
             messagebox.showerror("Σφάλμα", result)
-
     
     def UserDeleteCategory(self):
         delete_category_window = tk.Toplevel(self)
@@ -547,8 +547,6 @@ class IncomeExpensesFrame(tk.Frame):
 
         delete_button = ttk.Button(delete_category_window, text="Διαγραφή", command=lambda: self.UserRemoveCategory(delete_category_window), style='danger.TButton')
         delete_button.grid(row=2, column=0, columnspan=2, pady=10)
-
-
         
     def UserRemoveCategory(self, delete_category_window):
         category_name = self.category_name_var.get()
@@ -574,6 +572,7 @@ class IncomeExpensesFrame(tk.Frame):
         if "διαγράφηκε επιτυχώς" in result:
             messagebox.showinfo("Επιτυχία", result)
             self.update_front_end()
+            delete_category_window.destroy()  # Κλείσιμο του παραθύρου διαγραφής κατηγορίας
         else:
             messagebox.showerror("Σφάλμα", result)
     

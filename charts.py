@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 def plot_donut_chart(data):
     total_income = 0
     total_expense = 0
-    print(data)
     # Ρύθμιση του μεγέθους του γραφήματος για το διάγραμμα
     plt.rcParams["figure.figsize"] = (2, 2)
 
