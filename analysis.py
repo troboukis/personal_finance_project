@@ -75,7 +75,7 @@ class FinanceAnalysis(tk.Frame):
         figure = chart_functions[self.current_chart_index](data)
         self.canvas = FigureCanvasTkAgg(figure, self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        self.canvas.get_tk_widget().grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="e")
 
     def refresh_data(self):
         self.df = self.data.get_all_data()  # Re-fetch the data
@@ -105,6 +105,7 @@ class FinanceAnalysis(tk.Frame):
 #     return fig
 
 def chart1(data):
+    
     # Group by category and calculate the sum of Έσοδα and Έξοδα
     grouped_data = data.groupby(['Κατηγορία', 'Τύπος'])['Ποσό'].sum().unstack(fill_value=0)
     
@@ -115,12 +116,20 @@ def chart1(data):
     net_amounts = net_amounts.sort_values(ascending=True)
     
     # Create the horizontal bar chart
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.grid(True, linestyle='-', linewidth=0.2, color='lightgray', which='both', axis='both')
     net_amounts.plot(kind='barh', ax=ax)
-    ax.set_title('Έσοδα - Έξοδα ανά Κατηγορία')
-    ax.set_xlabel('Καθαρό Ποσό (€)')
-    ax.set_ylabel('Κατηγορία')
+    ax.set_title('Έσοδα - Έξοδα ανά Κατηγορία', fontsize=12, weight='bold', color='white')
+    ax.set_xlabel('Καθαρό Ποσό (€)', fontsize=12, weight='bold', color='white')
+    ax.set_ylabel('Κατηγορία', fontsize=12, weight='bold', color='white')
     plt.tight_layout()
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    ax.tick_params(axis='x', colors='#FFFFFA')
+    ax.tick_params(axis='y', colors='#FFFFFA')
+    for spine in ax.spines.values():
+        spine.set_color('lightgray')
+    
 
     return fig
 
@@ -130,14 +139,20 @@ def chart2(data):
     total_amounts = data.groupby('Τύπος')['Ποσό'].sum()
     
     # Create the bar chart
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.grid(True, linestyle='-', linewidth=0.2, color='lightgray', which='both', axis='both')
     total_amounts.plot(kind='bar', ax=ax, color=['red', 'green'])
-    ax.set_title('Συνολικά Έσοδα και Έξοδα')
-    ax.set_xlabel('Τύπος')
-    ax.set_ylabel('Ποσό (€)')
+    ax.set_title('Συνολικά Έσοδα και Έξοδα', fontsize=12, weight='bold', color='white')
+    ax.set_xlabel('Τύπος', fontsize=12, weight='bold', color='white')
+    ax.set_ylabel('Ποσό (€)', fontsize=12, weight='bold', color='white')
     plt.xticks(rotation=0)
     plt.tight_layout()
-
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    ax.tick_params(axis='x', colors='#FFFFFA')
+    ax.tick_params(axis='y', colors='#FFFFFA')
+    for spine in ax.spines.values():
+        spine.set_color('lightgray')
     return fig
 
 def chart3(data):
@@ -164,13 +179,20 @@ def chart3(data):
     month_year_labels = [f'{y}-{m:02d}' for y, m in grouped_data.index]
     
     # Plotting
-    fig, ax = plt.subplots(figsize=(10, 8))
-    grouped_data['Διαφορά'].plot(kind='barh', color='skyblue', title='Διαφορά Εσόδων και Εξόδων ανά Μήνα', ax=ax)
-    ax.set_ylabel('Μήνας (Έτος, Μήνας)')
-    ax.set_xlabel('Διαφορά Ποσών')
+    fig, ax = plt.subplots(figsize=(7, 4))
+    grouped_data['Διαφορά'].plot(kind='barh', color='skyblue', ax=ax)
+    ax.set_title('Διαφορά Εσόδων και Εξόδων ανά Μήνα', fontsize=12, weight='bold', color='white')
+    ax.set_ylabel('Μήνας (Έτος, Μήνας)', fontsize=12, weight='bold', color='white')
+    ax.set_xlabel('Διαφορά Ποσών', fontsize=12, weight='bold', color='white')
     ax.axvline(0, color='gray', linewidth=0.8)
     ax.set_yticklabels(month_year_labels)  # Set custom labels
-    
+    plt.tight_layout()
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    ax.tick_params(axis='x', colors='#FFFFFA')
+    ax.tick_params(axis='y', colors='#FFFFFA')
+    for spine in ax.spines.values():
+        spine.set_color('lightgray')
     return fig
 
 
