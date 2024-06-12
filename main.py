@@ -54,7 +54,7 @@ def main():
     separator.grid(row=1, column=0, columnspan=3, sticky='ew', pady=(170, 90))
     tk.Label(home_frame, text="Ομάδα Δ", font=("Helvetica", 25), background="#FFDEAD", foreground="#000000").grid(row=2, column=0, columnspan=3, sticky='ew', padx=0, pady=0)
     # Ομάδα
-    tk.Label(home_frame, text="Θανάσης Τρομπούκης (συντονιστής), Αλέξανδρος Ρουμελιωτάκης, Νίκος Ταμπουρατζής, Γιώργος Παπαδόπουλος, Γιώργος Τσιώκος", font=("Helvetica", 15), background="#FFDEAD", foreground="#000000").grid(row=3, column=0, columnspan=3, sticky='ew', padx=0, pady=0)
+    tk.Label(home_frame, text="Θανάσης Τρομπούκης (συντονιστής), Αλέξανδρος Ρουμελιωτάκης, Νίκος Ταμπουρατζής, Γιώργος Τσιώκος", font=("Helvetica", 15), background="#FFDEAD", foreground="#000000").grid(row=3, column=0, columnspan=3, sticky='ew', padx=0, pady=0)
 
     # Κουμπί έσοδα - έξοδα
     bttk.Button(home_frame, text='Έσοδα - Έξοδα', style='primary.TButton', command=lambda: show_frame(income_expenses_frame))\
