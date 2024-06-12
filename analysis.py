@@ -26,7 +26,7 @@ class FinanceAnalysis(tk.Frame):
         # Initialize the DatabaseConnection
         self.data = DatabaseConnection(new_db)
         self.df = self.data.get_all_data()
-        self.df.to_csv("./t.csv", index=False)
+
 
         # Initialize canvas attribute for later reference
         self.canvas = None
