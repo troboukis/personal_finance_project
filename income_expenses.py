@@ -377,6 +377,7 @@ class IncomeExpensesFrame(tk.Frame):
         self.delete_button.grid_remove()
         self.action_button.grid(row=9, column=0, columnspan=2, pady=10, sticky="nsew")
         self.update_table()
+        self.category.set(self.expense_category_options[0])
         self.embed_donut_chart(self.db.get_all_data())
 
     def update_income(self):
