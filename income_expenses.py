@@ -213,6 +213,9 @@ class IncomeExpensesFrame(tk.Frame):
 
 
     def on_select(self, event):
+        '''
+        Όταν επιλέξουμε ένα έσοδο/έξοδο φέρνει τα δεδομένα στη φόρμα ώστε να τα επεξεργαστούμε. Εάν το επιλέξουμε δύο φορές, το αποεπιλέγει και καθαρίζει τη φόρμα.
+        '''
         current_selected_item = self.tree.selection()
 
         # Ελέγξτε αν το τρέχον επιλεγμένο στοιχείο ήταν ήδη επιλεγμένο πριν
@@ -221,7 +224,7 @@ class IncomeExpensesFrame(tk.Frame):
             self.last_item = None
             self.clear_input()  # Καθαρίζουμε τη φόρμα
         else:
-            # Update the form only if a new item is selected
+            # Ενημέρωση της φόρμας μόνο αν επιλεγεί ένα νέο στοιχείο
             if current_selected_item:
                 item = self.tree.item(current_selected_item)
                 data = item['values']
@@ -238,10 +241,10 @@ class IncomeExpensesFrame(tk.Frame):
                 self.category.set(data[4])
                 self.frequency.set(data[3])
 
-            # Store the currently selected item as the last item
+            # Αποθήκευση του τρέχοντος επιλεγμένου στοιχείου ως το τελευταίο στοιχείο
             self.last_item = current_selected_item
 
-            # Handle the toggle edit mode based on type
+            # Χειρισμός της εναλλαγής λειτουργίας επεξεργασίας με βάση τον τύπο
             if self.show_income.get() and current_selected_item:
                 self.toggle_edit_mode(True, current_selected_item, income_flag=True)
             elif self.show_expenses.get() and current_selected_item:
@@ -249,12 +252,12 @@ class IncomeExpensesFrame(tk.Frame):
 
     def correct_amount(self):
         try:
-            amount = float(self.amount.get())  # Try converting amount to float
+            amount = float(self.amount.get())  # Δοκιμάστε να μετατρέψετε το ποσό σε float
             return amount
         except ValueError:
             messagebox.showerror("Σφάλμα", "Έχετε εισάγει μη έγκυρο ποσό.")
             self.delete_last_entry()
-            return None  # Or handle it some other way
+            return None  # Ή να το χειριστείτε με κάποιον άλλο τρόπο
 
     def add_income(self):
         income_data = {
@@ -267,7 +270,7 @@ class IncomeExpensesFrame(tk.Frame):
         category_id = return_index(income_data['Category'], self.indb.showData('category_table'))
         frequency_id = return_index(income_data['Frequency'], self.indb.showData('frequency_table'))
 
-        self.incomes.append(income_data)  # Add to the list of entries
+        self.incomes.append(income_data)  # Προσθήκη στον κατάλογο καταχωρήσεων
 
         self.indb.InsertIncome(
             income_data['Description'],
@@ -275,7 +278,7 @@ class IncomeExpensesFrame(tk.Frame):
             category_id,
             income_data['Date'],
             frequency_id)
-        self.update_table()  # Update the table view
+        self.update_table()  # Ενημέρωση της προβολής πίνακα
         self.clear_input()
 
     def add_expense(self):
@@ -320,16 +323,16 @@ class IncomeExpensesFrame(tk.Frame):
             self.action_button.config(text="Καμία ενέργεια", command=lambda: None)
 
     def toggle_expenses_off(self):
-        # This method is called when the income checkbox is clicked
+        # Αυτή η μέθοδος καλείται όταν γίνεται κλικ στο πλαίσιο ελέγχου εισοδήματος.
         if self.show_income.get() == True:
-            self.show_expenses.set(False)  # Uncheck expenses
+            self.show_expenses.set(False)  # Αποελέγξτε τα έξοδα
             self.category.set(self.income_category_options[0])
             ttk.Combobox(self, textvariable=self.category, font=("Courier", 20),
                          values=self.income_category_options).grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         self.update_table()
 
     def toggle_income_off(self):
-        # This method is called when the expenses checkbox is clicked
+        # Αυτή η μέθοδος καλείται όταν γίνεται κλικ στο πλαίσιο ελέγχου δαπανών.
         if self.show_expenses.get() == True:
             self.show_income.set(False)  # Uncheck income
             self.category.set(self.expense_category_options[0])
@@ -345,12 +348,12 @@ class IncomeExpensesFrame(tk.Frame):
             if edit:
                 self.action_button.config(text="Ενημέρωση", command=self.update_income)
                 self.action_button.grid(columnspan=1)
-                self.delete_button.grid()  # Show the delete button when in edit mode
+                self.delete_button.grid()  # Εμφάνιση του κουμπιού διαγραφής όταν βρίσκεστε σε λειτουργία επεξεργασίας
             else:
                 self.clear_input()
-                # self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)  # Default action
+                # self.action_button.config(text="Πρόσθεσε έσοδο", command=self.add_income)  # Προεπιλεγμένη ενέργεια
                 # self.action_button.grid(columnspan=2)
-                # self.delete_button.grid_remove()  # Hide the delete button when not in edit mode
+                # self.delete_button.grid_remove()  # Απόκρυψη του κουμπιού διαγραφής όταν δεν βρίσκεστε σε λειτουργία επεξεργασίας
         else:
             if edit:
                 self.action_button.config(text="Ενημέρωση", command=self.update_expense)
@@ -362,6 +365,9 @@ class IncomeExpensesFrame(tk.Frame):
                 self.clear_input()
 
     def clear_input(self):
+        '''
+        Καθαρίζει την περιγραφή, ποσό,, ημερομηνία και συχνότητα. Καθαρίζει την επιλογή από το tree, σβήνει το κουμπί διαγραφής και επαναφέρει το κουμπί ενημέρωση - προσθήκη.
+        '''
         self.description.set("")
         self.amount.set("")
         self.date.set(current_date())

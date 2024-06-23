@@ -26,8 +26,8 @@ def plot_donut_chart(data):
         fig.gca().add_artist(centre_circle)
         ax.axis('equal')
         fig.patch.set_alpha(0.0)
-        plt.text(.5, 1, f'Έσοδα: {total_income} €', color='green', fontsize=6)
-        plt.text(-1.3, 1, f'Έξοδα: {total_expense} €', color='red', fontsize=6)
+        plt.text(.2, 1, f'Έσοδα: {total_income} €', color='green', fontsize=6)
+        plt.text(-1.1, 1, f'Έξοδα: {total_expense} €', color='red', fontsize=6)
         plt.text(0, 0, f'Υπόλοιπο\n{remaining_amount} €', ha='center', va='center', fontsize=10, weight='light', color='white')
     else:
         fig, ax = plt.subplots()
